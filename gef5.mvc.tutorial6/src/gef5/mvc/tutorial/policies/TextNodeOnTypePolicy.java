@@ -1,15 +1,14 @@
 package gef5.mvc.tutorial.policies;
 
-import org.eclipse.gef.mvc.fx.policies.IFXOnTypePolicy;
-import org.eclipse.gef.mvc.policies.AbstractInteractionPolicy;
+import java.util.*;
 
-import gef5.mvc.tutorial.parts.TextNodePart;
-import javafx.scene.Node;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import org.eclipse.gef.mvc.fx.handlers.*;
+
+import gef5.mvc.tutorial.parts.*;
+import javafx.scene.input.*;
 
 //only applicable for NodeContentPart (see #getHost())
-public class TextNodeOnTypePolicy extends AbstractInteractionPolicy<Node> implements IFXOnTypePolicy {
+public class TextNodeOnTypePolicy extends AbstractHandler implements IOnTypeHandler {
 
 	@Override
 	public TextNodePart getHost() {
@@ -17,7 +16,7 @@ public class TextNodeOnTypePolicy extends AbstractInteractionPolicy<Node> implem
 	}
 
 	@Override
-	public void pressed(KeyEvent event) {
+	public void type(KeyEvent event, Set<KeyCode> pressedKeys) {
 		if (KeyCode.F2.equals(event.getCode()) && !getHost().isEditing()) {
 			System.out.println("ExitEditingNodeLabelOnEnterPolicy.pressed() 1");
 			getHost().editModeStart();
@@ -36,19 +35,4 @@ public class TextNodeOnTypePolicy extends AbstractInteractionPolicy<Node> implem
 			getHost().editModeEnd(false);
 		}
 	}
-
-	@Override
-	public void released(KeyEvent event) {
-	}
-
-	@Override
-	public void typed(KeyEvent event) {
-
-	}
-
-	@Override
-	public void unfocus() {
-
-	}
-
 }

@@ -1,31 +1,21 @@
 package gef5.mvc.tutorial;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.*;
 
-import org.eclipse.gef.fx.nodes.InfiniteCanvas;
-import org.eclipse.gef.mvc.fx.domain.FXDomain;
-import org.eclipse.gef.mvc.fx.viewer.FXViewer;
-import org.eclipse.gef.mvc.models.ContentModel;
+import org.eclipse.gef.mvc.fx.domain.*;
+import org.eclipse.gef.mvc.fx.viewer.*;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
+import com.google.inject.*;
 
-import gef5.mvc.tutorial.model.Model;
-import gef5.mvc.tutorial.model.TextNode;
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.VBox;
+import gef5.mvc.tutorial.model.*;
+import javafx.application.*;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class Gef5MvcTutorial extends Application {
@@ -37,14 +27,15 @@ public class Gef5MvcTutorial extends Application {
 		Application.launch(args);
 	}
 
+	@Override
 	public void start(final Stage primaryStage) throws Exception {
 		jaxbContext = JAXBContext.newInstance(Model.class, TextNode.class);
 
 		Injector injector = Guice.createInjector(createGuiceModule());
 
-		FXDomain domain = injector.getInstance(FXDomain.class);
+		IDomain domain = injector.getInstance(IDomain.class);
 
-		FXViewer viewer = domain.getAdapter(FXViewer.class);
+		IViewer viewer = domain.getAdapter(IViewer.class);
 
 		AnchorPane paneCtrl = new AnchorPane();
 		AnchorPane paneDraw = new AnchorPane();
@@ -59,7 +50,7 @@ public class Gef5MvcTutorial extends Application {
 		AnchorPane.setLeftAnchor(btnUpdateModel, 10d);
 		AnchorPane.setRightAnchor(btnUpdateModel, 10d);
 
-		InfiniteCanvas drawingPane = viewer.getCanvas();
+		Parent drawingPane = viewer.getCanvas();
 		paneDraw.getChildren().add(drawingPane);
 		paneDraw.setPrefHeight(2000);
 		AnchorPane.setTopAnchor(drawingPane, 10d);
@@ -78,7 +69,7 @@ public class Gef5MvcTutorial extends Application {
 
 		domain.activate();
 
-		viewer.getAdapter(ContentModel.class).getContents().setAll(createContents());
+		viewer.getContents().setAll(createContents());
 	}
 
 	@Override

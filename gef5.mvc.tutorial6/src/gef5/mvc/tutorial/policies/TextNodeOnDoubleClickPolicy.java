@@ -1,14 +1,12 @@
 package gef5.mvc.tutorial.policies;
 
-import org.eclipse.gef.mvc.fx.policies.IFXOnClickPolicy;
-import org.eclipse.gef.mvc.policies.AbstractInteractionPolicy;
+import org.eclipse.gef.mvc.fx.handlers.*;
 
-import gef5.mvc.tutorial.parts.TextNodePart;
-import javafx.scene.Node;
-import javafx.scene.input.MouseEvent;
+import gef5.mvc.tutorial.parts.*;
+import javafx.scene.input.*;
 
 // only applicable for NodeContentPart (see #getHost())
-public class TextNodeOnDoubleClickPolicy extends AbstractInteractionPolicy<Node> implements IFXOnClickPolicy {
+public class TextNodeOnDoubleClickPolicy extends AbstractHandler implements IOnClickHandler {
 
 	@Override
 	public void click(MouseEvent e) {

@@ -1,27 +1,21 @@
 package gef5.mvc.tutorial.parts;
 
-import java.util.Map;
+import java.util.*;
 
-import org.eclipse.gef.mvc.behaviors.IBehavior;
-import org.eclipse.gef.mvc.parts.IContentPart;
-import org.eclipse.gef.mvc.parts.IContentPartFactory;
+import org.eclipse.gef.mvc.fx.parts.*;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
+import com.google.inject.*;
 
-import gef5.mvc.tutorial.model.Model;
-import gef5.mvc.tutorial.model.TextNode;
-import javafx.scene.Node;
+import gef5.mvc.tutorial.model.*;
+import javafx.scene.*;
 
-public class ModelPartFactory implements IContentPartFactory<Node> {
+public class ModelPartFactory implements IContentPartFactory {
 
 	@Inject
 	private Injector injector;
 
 	@Override
-	public IContentPart<Node, ? extends Node> createContentPart(Object content, IBehavior<Node> contextBehavior,
-			Map<Object, Object> contextMap) {
-
+	public IContentPart<? extends Node> createContentPart(Object content, Map<Object, Object> contextMap) {
 		if (content instanceof Model) {
 			return injector.getInstance(ModelPart.class);
 		} else if (content instanceof TextNode) {
@@ -29,6 +23,6 @@ public class ModelPartFactory implements IContentPartFactory<Node> {
 		} else {
 			throw new IllegalArgumentException(content.getClass().toString());
 		}
-	};
+	}
 
 }

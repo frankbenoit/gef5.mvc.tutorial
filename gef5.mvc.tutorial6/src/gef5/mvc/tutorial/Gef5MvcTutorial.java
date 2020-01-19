@@ -1,57 +1,50 @@
 package gef5.mvc.tutorial;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.function.*;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.*;
 
-import org.eclipse.core.commands.operations.IOperationHistory;
-import org.eclipse.core.commands.operations.IUndoContext;
-import org.eclipse.core.commands.operations.IUndoableOperation;
-import org.eclipse.gef.fx.nodes.InfiniteCanvas;
-import org.eclipse.gef.mvc.fx.domain.FXDomain;
-import org.eclipse.gef.mvc.fx.viewer.FXViewer;
-import org.eclipse.gef.mvc.models.ContentModel;
+import org.eclipse.core.commands.operations.*;
+import org.eclipse.gef.fx.nodes.*;
+import org.eclipse.gef.mvc.fx.domain.*;
+import org.eclipse.gef.mvc.fx.viewer.*;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
+import com.google.inject.*;
 
-import gef5.mvc.tutorial.model.Model;
-import gef5.mvc.tutorial.model.TextNode;
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import gef5.mvc.tutorial.model.*;
+import javafx.application.*;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class Gef5MvcTutorial extends Application {
 
 	private Model model;
 	private JAXBContext jaxbContext;
-	private FXDomain domain;
+	private IDomain domain;
+	private IOperationHistory history;
+	private IUndoContext undoContext;
 
 	public static void main(String[] args) {
 		Application.launch(args);
 	}
 
+	@Override
 	public void start(final Stage primaryStage) throws Exception {
 
 		jaxbContext = JAXBContext.newInstance(Model.class, TextNode.class);
 
 		Injector injector = Guice.createInjector(createGuiceModule());
 
-		domain = injector.getInstance(FXDomain.class);
+		domain = injector.getInstance(IDomain.class);
+		history = injector.getInstance(IOperationHistory.class);
+		undoContext = injector.getInstance(IUndoContext.class);
 
-		FXViewer viewer = domain.getAdapter(FXViewer.class);
+		InfiniteCanvasViewer viewer = (InfiniteCanvasViewer) domain.getAdapter(IViewer.class);
 
 		HBox paneCtrl = new HBox();
 		AnchorPane paneDraw = new AnchorPane();
@@ -68,8 +61,7 @@ public class Gef5MvcTutorial extends Application {
 		btnUndo.setDisable(true);
 		btnUndo.setOnAction(e -> {
 			try {
-				IOperationHistory history = domain.getOperationHistory();
-				history.undo(domain.getUndoContext(), null, null);
+				history.undo(undoContext, null, null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -80,14 +72,13 @@ public class Gef5MvcTutorial extends Application {
 		btnRedo.setDisable(true);
 		btnRedo.setOnAction(e -> {
 			try {
-				IOperationHistory history = domain.getOperationHistory();
-				history.redo(domain.getUndoContext(), null, null);
+				history.redo(undoContext, null, null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 		});
 
-		domain.getOperationHistory().addOperationHistoryListener(e -> {
+		history.addOperationHistoryListener(e -> {
 			updateUnReDoButton(btnUndo, "Undo", e.getHistory()::getUndoHistory);
 			updateUnReDoButton(btnRedo, "Redo", e.getHistory()::getRedoHistory);
 		});
@@ -117,11 +108,11 @@ public class Gef5MvcTutorial extends Application {
 
 		domain.activate();
 
-		viewer.getAdapter(ContentModel.class).getContents().setAll(createContents());
+		viewer.getContents().setAll(createContents());
 	}
 
 	private void updateUnReDoButton(Button btn, String label, Function<IUndoContext, IUndoableOperation[]> getHist) {
-		IUndoableOperation[] entries = getHist.apply(domain.getUndoContext());
+		IUndoableOperation[] entries = getHist.apply(undoContext);
 		btn.setDisable(entries.length == 0);
 		if (entries.length == 0) {
 			btn.setText(label);

@@ -1,14 +1,11 @@
 package gef5.mvc.tutorial.policies;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.operations.AbstractOperation;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.gef.mvc.operations.ITransactionalOperation;
+import org.eclipse.core.commands.*;
+import org.eclipse.core.commands.operations.*;
+import org.eclipse.core.runtime.*;
+import org.eclipse.gef.mvc.fx.operations.*;
 
-import gef5.mvc.tutorial.parts.TextNodePart;
+import gef5.mvc.tutorial.parts.*;
 
 public class ChangeTextNodeTextOperation extends AbstractOperation implements ITransactionalOperation {
 
