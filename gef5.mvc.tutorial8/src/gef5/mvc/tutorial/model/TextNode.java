@@ -1,25 +1,12 @@
 package gef5.mvc.tutorial.model;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.eclipse.gef5.common.properties.IPropertyChangeNotifier;
+import javax.xml.bind.annotation.*;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class TextNode implements IPropertyChangeNotifier {
+public class TextNode {
 
 	public final String POSITION_PROPERTY = "position";
 	public final String TEXT_PROPERTY = "text";
@@ -31,35 +18,26 @@ public class TextNode implements IPropertyChangeNotifier {
 	@XmlElement
 	private String text = "";
 
-	protected PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 //	private Color color = Color.LIGHTSKYBLUE;
 
-	@XmlElementWrapper(name="Childs")
-	@XmlElement(name="TextNode")
+	@XmlElementWrapper(name = "Childs")
+	@XmlElement(name = "TextNode")
 	@XmlIDREF
 	public List<TextNode> childs = new LinkedList<>();
 
 	private TextNode parent;
-	
+
 	private Model model;
 
-	public TextNode(){
+	public TextNode() {
 	}
-	public TextNode( String text){
+
+	public TextNode(String text) {
 		this.text = text;
 	}
 
 	public String getText() {
 		return text;
-	}
-
-	@Override
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
-		pcs.addPropertyChangeListener(listener);
-	}
-	@Override
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
-		pcs.removePropertyChangeListener(listener);
 	}
 
 	public void setText(String text) {
@@ -74,18 +52,20 @@ public class TextNode implements IPropertyChangeNotifier {
 
 	public void addChild(TextNode child) {
 		childs.add(child);
-		child.setParent( this );
+		child.setParent(this);
 		model.ensureRegistered(child);
 	}
 
 	void setParent(TextNode textNode) {
 		parent = textNode;
 	}
+
 	public TextNode getParent() {
 		return parent;
 	}
-	public boolean isRootNode(){
+
+	public boolean isRootNode() {
 		return model.getRootNode() == this;
 	}
-	
+
 }

@@ -1,22 +1,17 @@
 package gef5.mvc.tutorial.parts;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
+import java.beans.*;
+import java.util.*;
 
-import org.eclipse.gef.mvc.fx.parts.AbstractFXContentPart;
-import org.eclipse.gef.mvc.parts.IVisualPart;
+import org.eclipse.gef.mvc.fx.parts.*;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
+import com.google.common.collect.*;
 
-import gef5.mvc.tutorial.model.Model;
-import gef5.mvc.tutorial.model.TextNode;
-import javafx.collections.ObservableList;
-import javafx.scene.Group;
-import javafx.scene.Node;
+import gef5.mvc.tutorial.model.*;
+import javafx.collections.*;
+import javafx.scene.*;
 
-public class ModelPart extends AbstractFXContentPart<Group> implements PropertyChangeListener {
+public class ModelPart extends AbstractContentPart<Group> implements PropertyChangeListener {
 
 	@Override
 	protected void doActivate() {
@@ -40,7 +35,7 @@ public class ModelPart extends AbstractFXContentPart<Group> implements PropertyC
 	}
 
 	@Override
-	protected Group createVisual() {
+	protected Group doCreateVisual() {
 		return new Group();
 	}
 
@@ -55,7 +50,7 @@ public class ModelPart extends AbstractFXContentPart<Group> implements PropertyC
 	}
 
 	@Override
-	protected void addChildVisual(IVisualPart<Node, ? extends Node> child, int index) {
+	protected void doAddChildVisual(IVisualPart<? extends Node> child, int index) {
 		ObservableList<Node> children = getVisual().getChildren();
 		Node visual = child.getVisual();
 		children.add(visual);
@@ -72,7 +67,7 @@ public class ModelPart extends AbstractFXContentPart<Group> implements PropertyC
 	}
 
 	@Override
-	protected void removeChildVisual(IVisualPart<Node, ? extends Node> child, int index) {
+	protected void doRemoveChildVisual(IVisualPart<? extends Node> child, int index) {
 		ObservableList<Node> children = getVisual().getChildren();
 		children.remove(index);
 	}

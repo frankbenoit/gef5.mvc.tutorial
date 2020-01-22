@@ -1,18 +1,17 @@
 package gef5.mvc.tutorial.model;
 
+import org.eclipse.gef.geometry.planar.*;
 
-import org.eclipse.gef.geometry.planar.Point;
+import javafx.scene.paint.*;
 
-import javafx.scene.paint.Color;
-
-public class Model {
+public class TextModel {
 
 	public final Point position = new Point();
 
 	private String text = "Text ...";
 	private Color color = Color.LIGHTSKYBLUE;
 
-	public Model() {
+	public TextModel() {
 		position.setLocation(50, 50);
 	}
 

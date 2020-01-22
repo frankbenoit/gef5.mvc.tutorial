@@ -11,25 +11,22 @@
  *******************************************************************************/
 package gef5.mvc.tutorial.parts;
 
-import java.util.Map.Entry;
+import java.util.Map.*;
 
-import org.eclipse.gef.mvc.fx.parts.AbstractFXHandlePart;
-import org.eclipse.gef.mvc.fx.policies.FXHoverOnHoverPolicy;
-import org.eclipse.gef.mvc.parts.IVisualPart;
+import org.eclipse.gef.mvc.fx.handlers.*;
+import org.eclipse.gef.mvc.fx.parts.*;
 
-import com.google.common.collect.SetMultimap;
+import com.google.common.collect.*;
 
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
+import javafx.geometry.*;
+import javafx.scene.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
 
-public class HoverHandleRootPart extends AbstractFXHandlePart<VBox> {
+public class HoverHandleRootPart extends AbstractHandlePart<VBox> {
 
 	public HoverHandleRootPart() {
-		setAdapter(new FXHoverOnHoverPolicy() {
+		setAdapter(new HoverOnHoverHandler() {
 			@Override
 			public void hover(MouseEvent e) {
 				// XXX: deactivate hover for this part
@@ -38,32 +35,32 @@ public class HoverHandleRootPart extends AbstractFXHandlePart<VBox> {
 	}
 
 	@Override
-	protected void addChildVisual(IVisualPart<Node, ? extends Node> child, int index) {
+	protected void doAddChildVisual(IVisualPart<? extends Node> child, int index) {
 		getVisual().getChildren().add(index, child.getVisual());
-		for (Entry<IVisualPart<Node, ? extends Node>, String> anchorage : getAnchoragesUnmodifiable().entries()) {
+		for (Entry<IVisualPart<? extends Node>, String> anchorage : getAnchoragesUnmodifiable().entries()) {
 			child.attachToAnchorage(anchorage.getKey(), anchorage.getValue());
 		}
 	}
 
 	@Override
-	protected void attachToAnchorageVisual(IVisualPart<Node, ? extends Node> anchorage, String role) {
-		super.attachToAnchorageVisual(anchorage, role);
-		for (IVisualPart<Node, ? extends Node> child : getChildrenUnmodifiable()) {
+	protected void doAttachToAnchorageVisual(IVisualPart<? extends Node> anchorage, String role) {
+		super.doAttachToAnchorageVisual(anchorage, role);
+		for (IVisualPart<? extends Node> child : getChildrenUnmodifiable()) {
 			child.attachToAnchorage(anchorage, role);
 		}
 	}
 
 	@Override
-	protected VBox createVisual() {
+	protected VBox doCreateVisual() {
 		VBox vBox = new VBox();
 		vBox.setPickOnBounds(true);
 		return vBox;
 	}
 
 	@Override
-	protected void detachFromAnchorageVisual(IVisualPart<Node, ? extends Node> anchorage, String role) {
-		super.detachFromAnchorageVisual(anchorage, role);
-		for (IVisualPart<Node, ? extends Node> child : getChildrenUnmodifiable()) {
+	protected void doDetachFromAnchorageVisual(IVisualPart<? extends Node> anchorage, String role) {
+		super.doDetachFromAnchorageVisual(anchorage, role);
+		for (IVisualPart<? extends Node> child : getChildrenUnmodifiable()) {
 			child.detachFromAnchorage(anchorage, role);
 		}
 	}
@@ -71,13 +68,13 @@ public class HoverHandleRootPart extends AbstractFXHandlePart<VBox> {
 	@Override
 	protected void doRefreshVisual(VBox visual) {
 		// check if we have a host
-		SetMultimap<IVisualPart<Node, ? extends Node>, String> anchorages = getAnchoragesUnmodifiable();
+		SetMultimap<IVisualPart<? extends Node>, String> anchorages = getAnchoragesUnmodifiable();
 		if (anchorages.isEmpty()) {
 			return;
 		}
 
 		// determine center location of host visual
-		IVisualPart<Node, ? extends Node> anchorage = anchorages.keys().iterator().next();
+		IVisualPart<? extends Node> anchorage = anchorages.keys().iterator().next();
 		refreshHandleLocation(anchorage.getVisual());
 	}
 
@@ -94,7 +91,7 @@ public class HoverHandleRootPart extends AbstractFXHandlePart<VBox> {
 	}
 
 	@Override
-	protected void removeChildVisual(IVisualPart<Node, ? extends Node> child, int index) {
+	protected void doRemoveChildVisual(IVisualPart<? extends Node> child, int index) {
 		getVisual().getChildren().remove(index);
 	}
 

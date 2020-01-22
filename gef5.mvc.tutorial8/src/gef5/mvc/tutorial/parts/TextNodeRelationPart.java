@@ -1,61 +1,65 @@
 package gef5.mvc.tutorial.parts;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import org.eclipse.gef5.fx.anchors.IAnchor;
-import org.eclipse.gef5.fx.nodes.Connection;
-import org.eclipse.gef5.fx.nodes.IConnectionRouter;
-import org.eclipse.gef5.fx.nodes.PolyBezierConnectionRouter;
-import org.eclipse.gef5.geometry.planar.ICurve;
-import org.eclipse.gef5.geometry.planar.IMultiShape;
-import org.eclipse.gef5.geometry.planar.Line;
-import org.eclipse.gef5.geometry.planar.Path;
-import org.eclipse.gef5.geometry.planar.Point;
-import org.eclipse.gef5.geometry.planar.Polygon;
-import org.eclipse.gef5.geometry.planar.Polyline;
-import org.eclipse.gef5.mvc.fx.parts.AbstractFXContentPart;
-import org.eclipse.gef5.mvc.parts.IVisualPart;
+import org.eclipse.gef.fx.anchors.*;
+import org.eclipse.gef.fx.nodes.*;
+import org.eclipse.gef.geometry.planar.*;
+import org.eclipse.gef.mvc.fx.parts.*;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
-import com.google.common.reflect.TypeToken;
-import com.google.inject.Provider;
+import com.google.common.collect.*;
+import com.google.common.reflect.*;
+import com.google.inject.*;
 
-import gef5.mvc.tutorial.model.TextNodeRelation;
-import javafx.scene.Node;
-import javafx.scene.paint.Color;
+import gef5.mvc.tutorial.model.*;
+import javafx.scene.*;
+import javafx.scene.paint.*;
 
-public class TextNodeRelationPart extends AbstractFXContentPart<Connection> {
+public class TextNodeRelationPart extends AbstractContentPart<Connection> {
 
 	private static final String ROLE_START = "START";
-	private static final String ROLE_END   = "END";
+	private static final String ROLE_END = "END";
 	protected static final double VSPACE = 10;
 
-	public TextNodeRelationPart(){
-	}
-	@Override
-	public TextNodeRelation getContent() {
-		return (TextNodeRelation)super.getContent();
+	public TextNodeRelationPart() {
 	}
 
 	@Override
-	protected Connection createVisual() {
-		
+	public TextNodeRelation getContent() {
+		return (TextNodeRelation) super.getContent();
+	}
+
+	@Override
+	protected Connection doCreateVisual() {
+
 		Connection visual = new Connection();
-		visual.setRouter(new IConnectionRouter(){
+		visual.setRouter(new IConnectionRouter() {
 			@Override
 			public ICurve routeConnection(Point[] points) {
 				if (points == null || points.length < 2) {
 					return new Line(0, 0, 0, 0);
 				}
-				if( points.length > 2 ) throw new RuntimeException("len: "+points.length);
-				Point start = ( points[0].x < points[1].x ) ? points[0] : points[1];
-				Point end   = ( points[0].x > points[1].x ) ? points[0] : points[1];
-				Point p1 = new Point( start.x + VSPACE, start.y );
-				Point p2 = new Point( start.x + VSPACE, end.y );
-				Polyline poly = new Polyline(start, p1, p2, end );
+				if (points.length > 2) {
+					throw new RuntimeException("len: " + points.length);
+				}
+				Point start = points[0].x < points[1].x ? points[0] : points[1];
+				Point end = points[0].x > points[1].x ? points[0] : points[1];
+				Point p1 = new Point(start.x + VSPACE, start.y);
+				Point p2 = new Point(start.x + VSPACE, end.y);
+				Polyline poly = new Polyline(start, p1, p2, end);
 				return poly;
+			}
+
+			@Override
+			public void route(Connection connection) {
+				throw new UnsupportedOperationException();
+
+			}
+
+			@Override
+			public boolean wasInserted(IAnchor anchor) {
+				throw new UnsupportedOperationException();
+				return false;
 			}
 		});
 		visual.getCurveNode().setStroke(Color.BLACK);
@@ -66,33 +70,34 @@ public class TextNodeRelationPart extends AbstractFXContentPart<Connection> {
 	@Override
 	protected void doRefreshVisual(Connection visual) {
 	}
-	
+
 	@Override
-	public SetMultimap<? extends Object, String> getContentAnchorages() {
+	protected SetMultimap<? extends Object, String> doGetContentAnchorages() {
 		HashMultimap<Object, String> res = HashMultimap.create();
 		TextNodeRelation nr = getContent();
-		res.put( nr.getParent(), ROLE_START );
-		res.put( nr.getChild(), ROLE_END );
+		res.put(nr.getParent(), ROLE_START);
+		res.put(nr.getChild(), ROLE_END);
 		return res;
 	}
 
 	@Override
-	public List<? extends Object> getContentChildren() {
+	protected List<? extends Object> doGetContentChildren() {
 		return Collections.emptyList();
 	}
 
-	@SuppressWarnings("serial")
 	@Override
-	protected void attachToAnchorageVisual( IVisualPart<Node, ? extends Node> anchorage, String role) {
-		Provider<? extends IAnchor> provider = anchorage.getAdapter(new TypeToken<Provider<? extends IAnchor>>() {});
-		
+	protected void doAttachToAnchorageVisual(IVisualPart<? extends Node> anchorage, String role) {
+		@SuppressWarnings("serial")
+		Provider<? extends IAnchor> provider = anchorage.getAdapter(new TypeToken<Provider<? extends IAnchor>>() {
+		});
+
 		IAnchor anchor = provider.get();
 		if (role.equals(ROLE_START)) {
 			getVisual().setStartAnchor(anchor);
 		} else if (role.equals(ROLE_END)) {
 			getVisual().setEndAnchor(anchor);
 		} else {
-			throw new IllegalStateException( "Cannot attach to anchor with role <" + role + ">.");
+			throw new IllegalStateException("Cannot attach to anchor with role <" + role + ">.");
 		}
 	}
 

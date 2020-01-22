@@ -11,16 +11,15 @@
  *******************************************************************************/
 package gef5.mvc.tutorial.parts;
 
-import javafx.scene.Node;
+import org.eclipse.gef.common.collections.*;
+import org.eclipse.gef.mvc.fx.parts.*;
+import org.eclipse.gef.mvc.fx.viewer.*;
 
-import org.eclipse.gef.common.collections.SetMultimapChangeListener;
-import org.eclipse.gef.mvc.fx.parts.AbstractFXHandlePart;
-import org.eclipse.gef.mvc.parts.IVisualPart;
-import org.eclipse.gef.mvc.viewer.IViewer;
+import com.google.common.collect.*;
 
-import com.google.common.collect.SetMultimap;
+import javafx.scene.*;
 
-public abstract class AbstractLogoHoverHandlePart<T extends Node> extends AbstractFXHandlePart<T> {
+public abstract class AbstractLogoHoverHandlePart<T extends Node> extends AbstractHandlePart<T> {
 
 	private boolean registered = false;
 
@@ -31,19 +30,19 @@ public abstract class AbstractLogoHoverHandlePart<T extends Node> extends Abstra
 	// public void propertyChange(PropertyChangeEvent evt) {
 	// if (IVisualPart.ANCHORAGES_PROPERTY.equals(evt.getPropertyName())) {
 	// onParentAnchoragesChanged(
-	// (SetMultimap<IVisualPart<Node, ? extends Node>, String>)
+	// (SetMultimap<IVisualPart<? extends Node>, String>)
 	// evt.getOldValue(),
-	// (SetMultimap<IVisualPart<Node, ? extends Node>, String>)
+	// (SetMultimap<IVisualPart<? extends Node>, String>)
 	// evt.getNewValue());
 	// }
 	// }
 	// };
 
-	private final SetMultimapChangeListener<IVisualPart<Node, ? extends Node>, String> parentAnchoragesChangeListener = new SetMultimapChangeListener<IVisualPart<Node, ? extends Node>, String>() {
+	private final SetMultimapChangeListener<IVisualPart<? extends Node>, String> parentAnchoragesChangeListener = new SetMultimapChangeListener<IVisualPart<? extends Node>, String>() {
 
 		@Override
 		public void onChanged(
-				org.eclipse.gef.common.collections.SetMultimapChangeListener.Change<? extends IVisualPart<Node, ? extends Node>, ? extends String> change) {
+				org.eclipse.gef.common.collections.SetMultimapChangeListener.Change<? extends IVisualPart<? extends Node>, ? extends String> change) {
 
 			if (!registered && getViewer() != null) {
 				register(getViewer());
@@ -56,15 +55,15 @@ public abstract class AbstractLogoHoverHandlePart<T extends Node> extends Abstra
 		// automatically layed out by its parent
 	}
 
-	protected void onParentAnchoragesChanged(SetMultimap<IVisualPart<Node, ? extends Node>, String> oldAnchorages,
-			SetMultimap<IVisualPart<Node, ? extends Node>, String> newAnchorages) {
+	protected void onParentAnchoragesChanged(SetMultimap<IVisualPart<? extends Node>, String> oldAnchorages,
+			SetMultimap<IVisualPart<? extends Node>, String> newAnchorages) {
 		if (!registered && getViewer() != null) {
 			register(getViewer());
 		}
 	}
 
 	@Override
-	protected void register(IViewer<Node> viewer) {
+	protected void register(IViewer viewer) {
 		if (registered) {
 			return;
 		}
@@ -73,7 +72,7 @@ public abstract class AbstractLogoHoverHandlePart<T extends Node> extends Abstra
 	}
 
 	@Override
-	public void setParent(IVisualPart<Node, ? extends Node> newParent) {
+	public void setParent(IVisualPart<? extends Node> newParent) {
 		if (getParent() != null) {
 			getParent().getAnchoragesUnmodifiable().removeListener(parentAnchoragesChangeListener);
 		}
@@ -84,7 +83,7 @@ public abstract class AbstractLogoHoverHandlePart<T extends Node> extends Abstra
 	}
 
 	@Override
-	protected void unregister(IViewer<Node> viewer) {
+	protected void unregister(IViewer viewer) {
 		if (!registered) {
 			return;
 		}

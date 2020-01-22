@@ -12,41 +12,37 @@
  *******************************************************************************/
 package gef5.mvc.tutorial.policies;
 
-import org.eclipse.gef.mvc.fx.policies.IFXOnClickPolicy;
-import org.eclipse.gef.mvc.parts.IContentPart;
-import org.eclipse.gef.mvc.parts.IVisualPart;
-import org.eclipse.gef.mvc.policies.AbstractInteractionPolicy;
-import org.eclipse.gef.mvc.policies.DeletionPolicy;
+import org.eclipse.gef.mvc.fx.handlers.*;
+import org.eclipse.gef.mvc.fx.parts.*;
+import org.eclipse.gef.mvc.fx.policies.*;
 
-import com.google.common.reflect.TypeToken;
+import javafx.scene.*;
+import javafx.scene.input.*;
 
-import javafx.scene.Node;
-import javafx.scene.input.MouseEvent;
-
-public class DeleteOnClickPolicy extends AbstractInteractionPolicy<Node> implements IFXOnClickPolicy {
+public class DeleteOnClickPolicy extends AbstractHandler implements IOnClickHandler {
 
 	@Override
 	public void click(MouseEvent e) {
 		System.out.println("DeleteOnClickPolicy.click()");
-		IVisualPart<Node, ? extends Node> targetPart = getTargetPart();
+		IVisualPart<? extends Node> targetPart = getTargetPart();
 		if (targetPart instanceof IContentPart) {
-			DeletionPolicy<Node> policy = getHost().getRoot().getAdapter(new TypeToken<DeletionPolicy<Node>>(){});
+			DeletionPolicy policy = getHost().getRoot().getAdapter(DeletionPolicy.class);
 			if (policy != null) {
 				init(policy);
 				// un establish anchor relations
-				policy.delete((IContentPart<Node, ? extends Node>) targetPart);
+				policy.delete((IContentPart<? extends Node>) targetPart);
 				commit(policy);
 			}
 		}
 	}
 
 	/**
-	 * Returns the target {@link IVisualPart} for this policy. Per default the
-	 * first anchorage is returned.
+	 * Returns the target {@link IVisualPart} for this policy. Per default the first
+	 * anchorage is returned.
 	 *
 	 * @return The target {@link IVisualPart} for this policy.
 	 */
-	protected IVisualPart<Node, ? extends Node> getTargetPart() {
+	protected IVisualPart<? extends Node> getTargetPart() {
 		return getHost().getAnchoragesUnmodifiable().keySet().iterator().next();
 	}
 

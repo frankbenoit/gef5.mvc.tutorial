@@ -1,48 +1,41 @@
 package gef5.mvc.tutorial.policies;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.gef5.mvc.domain.IDomain;
-import org.eclipse.gef5.mvc.fx.policies.AbstractFXOnTypePolicy;
+import java.util.*;
 
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.KeyEvent;
+import org.eclipse.core.commands.*;
+import org.eclipse.core.commands.operations.*;
+import org.eclipse.gef.mvc.fx.handlers.*;
+import org.eclipse.gef.mvc.fx.handlers.AbstractHandler;
 
-public class GlobalOnTypePolicy extends AbstractFXOnTypePolicy {
+import com.google.inject.*;
 
-	private static final KeyCodeCombination ctrlY = new KeyCodeCombination( KeyCode.Y, KeyCombination.CONTROL_DOWN );
-	private static final KeyCodeCombination ctrlZ = new KeyCodeCombination( KeyCode.Z, KeyCombination.CONTROL_DOWN );
+import javafx.scene.input.*;
+
+public class GlobalOnTypePolicy extends AbstractHandler implements IOnTypeHandler {
+
+	private static final KeyCodeCombination ctrlY = new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN);
+	private static final KeyCodeCombination ctrlZ = new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN);
+	@Inject
+	IOperationHistory operationHistory;
+	@Inject
+	IUndoContext undoContext;
 
 	@Override
-	public void pressed(KeyEvent event) {
+	public void type(KeyEvent event, Set<KeyCode> pressedKeys) {
 		if (ctrlZ.match(event)) {
 			try {
-				getDomain().getOperationHistory().undo(getDomain().getUndoContext(), null, null);
+				operationHistory.undo(undoContext, null, null);
 			} catch (ExecutionException e) {
 				throw new RuntimeException(e);
 			}
 		}
 		if (ctrlY.match(event)) {
 			try {
-				getDomain().getOperationHistory().redo(getDomain().getUndoContext(), null, null);
+				operationHistory.redo(undoContext, null, null);
 			} catch (ExecutionException e) {
 				throw new RuntimeException(e);
 			}
 		}
-	}
-
-	private IDomain<?> getDomain() {
-		return getHost().getRoot().getViewer().getDomain();
-	}
-
-	@Override
-	public void released(KeyEvent event) {
-	}
-
-	@Override
-	public void typed(KeyEvent event) {
-		
 	}
 
 }

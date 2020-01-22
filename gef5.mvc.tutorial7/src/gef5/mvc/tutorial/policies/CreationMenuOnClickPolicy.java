@@ -11,35 +11,29 @@
  *******************************************************************************/
 package gef5.mvc.tutorial.policies;
 
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.gef.fx.nodes.InfiniteCanvas;
-import org.eclipse.gef.mvc.fx.policies.IFXOnClickPolicy;
-import org.eclipse.gef.mvc.fx.viewer.FXViewer;
-import org.eclipse.gef.mvc.parts.IContentPart;
-import org.eclipse.gef.mvc.parts.IRootPart;
-import org.eclipse.gef.mvc.policies.AbstractInteractionPolicy;
-import org.eclipse.gef.mvc.policies.CreationPolicy;
-import org.eclipse.gef.mvc.viewer.IViewer;
+import org.eclipse.core.commands.*;
+import org.eclipse.gef.fx.nodes.*;
+import org.eclipse.gef.mvc.fx.handlers.*;
+import org.eclipse.gef.mvc.fx.handlers.AbstractHandler;
+import org.eclipse.gef.mvc.fx.parts.*;
+import org.eclipse.gef.mvc.fx.policies.*;
+import org.eclipse.gef.mvc.fx.viewer.*;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.reflect.TypeToken;
+import com.google.common.collect.*;
 
-import gef5.mvc.tutorial.model.TextNode;
-import javafx.geometry.Insets;
-import javafx.geometry.Point2D;
-import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
-import javafx.stage.Popup;
+import gef5.mvc.tutorial.model.*;
+import javafx.geometry.*;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import javafx.scene.effect.*;
+import javafx.scene.image.*;
+import javafx.scene.input.*;
+import javafx.scene.layout.*;
+import javafx.scene.paint.*;
+import javafx.stage.*;
 
 // TODO: only applicable for FXRootPart and FXViewer
-public class CreationMenuOnClickPolicy extends AbstractInteractionPolicy<Node> implements IFXOnClickPolicy {
+public class CreationMenuOnClickPolicy extends AbstractHandler implements IOnClickHandler {
 
 	/**
 	 * The adapter role for the
@@ -72,8 +66,8 @@ public class CreationMenuOnClickPolicy extends AbstractInteractionPolicy<Node> i
 		}
 	}
 
-	private FXViewer getViewer() {
-		return (FXViewer) getHost().getRoot().getViewer();
+	private InfiniteCanvasViewer getViewer() {
+		return (InfiniteCanvasViewer) getHost().getRoot().getViewer();
 	}
 
 	private void openMenu(final MouseEvent me) {
@@ -87,7 +81,7 @@ public class CreationMenuOnClickPolicy extends AbstractInteractionPolicy<Node> i
 		HBox hb = new HBox();
 		hb.setStyle("-fx-border-width: 1px; -fx-border-color: DIMGRAY; -fx-background-color: lightgray");
 		Button first = new Button();
-		first.setOnAction(e -> this.addTextNode());
+		first.setOnAction(e -> addTextNode());
 		ImageView iv = new ImageView(new Image(CreationMenuOnClickPolicy.class.getResourceAsStream("AddTextNode.png")));
 		iv.autosize();
 		first.setGraphic(iv);
@@ -102,14 +96,14 @@ public class CreationMenuOnClickPolicy extends AbstractInteractionPolicy<Node> i
 
 	private void addTextNode() {
 
-		IRootPart<Node, ? extends Node> root = getHost().getRoot();
-		IViewer<Node> viewer = root.getViewer();
+		IRootPart<? extends Node> root = getHost().getRoot();
+		IViewer viewer = root.getViewer();
 
 		TextNode textNode = new TextNode(initialMousePositionInScene.getX(), initialMousePositionInScene.getY(), "A");
-		IContentPart<Node, ? extends Node> contentPartModel = getHost().getRoot().getContentPartChildren().get(0);
+		IContentPart<? extends Node> contentPartModel = getHost().getRoot().getContentPartChildren().get(0);
 
 		// build create operation
-		CreationPolicy<Node> creationPolicy = root.getAdapter(new TypeToken<CreationPolicy<Node>>(){});
+		CreationPolicy creationPolicy = root.getAdapter(CreationPolicy.class);
 		creationPolicy.init();
 		creationPolicy.create(textNode, contentPartModel, HashMultimap.create());
 

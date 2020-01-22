@@ -61,7 +61,6 @@ public class TextNodePart extends AbstractContentPart<StackPane>
 
 	private ChangeListener<IContentPart<? extends Node>> focusObserver = new FocusListener(this);
 
-	@SuppressWarnings("serial")
 	@Override
 	protected void doActivate() {
 		super.doActivate();
@@ -73,7 +72,6 @@ public class TextNodePart extends AbstractContentPart<StackPane>
 
 	}
 
-	@SuppressWarnings("serial")
 	@Override
 	protected void doDeactivate() {
 		getContent().removePropertyChangeListener(objectObserver);

@@ -11,33 +11,26 @@
  *******************************************************************************/
 package gef5.mvc.tutorial.parts;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import org.eclipse.gef.mvc.behaviors.IBehavior;
-import org.eclipse.gef.mvc.fx.parts.FXDefaultHoverHandlePartFactory;
-import org.eclipse.gef.mvc.parts.IHandlePart;
-import org.eclipse.gef.mvc.parts.IVisualPart;
+import org.eclipse.gef.mvc.fx.parts.*;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
+import com.google.inject.*;
 
-import javafx.scene.Node;
+import javafx.scene.*;
 
-public class HandlePartFactory extends FXDefaultHoverHandlePartFactory {
+public class HandlePartFactory extends DefaultHoverIntentHandlePartFactory {
 
 	@Inject
 	private Injector injector;
 
 	@Override
-	public List<IHandlePart<Node, ? extends Node>> createHandleParts(
-			List<? extends IVisualPart<Node, ? extends Node>> targets, IBehavior<Node> contextBehavior,
+	public List<IHandlePart<? extends Node>> createHandleParts(List<? extends IVisualPart<? extends Node>> targets,
 			Map<Object, Object> contextMap) {
 
-		List<IHandlePart<Node, ? extends Node>> handles = new ArrayList<IHandlePart<Node, ? extends Node>>();
+		List<IHandlePart<? extends Node>> handles = new ArrayList<>();
 
-		final IVisualPart<Node, ? extends Node> target = targets.get(0);
+		final IVisualPart<? extends Node> target = targets.get(0);
 		if (target instanceof TextNodePart) {
 			// create root handle part
 			HoverHandleRootPart parentHp = new HoverHandleRootPart();
@@ -50,7 +43,7 @@ public class HandlePartFactory extends FXDefaultHoverHandlePartFactory {
 
 			return handles;
 		}
-		return super.createHandleParts(targets, contextBehavior, contextMap);
+		return super.createHandleParts(targets, contextMap);
 	}
 
 }

@@ -17,8 +17,10 @@ public class ModelPartFactory implements IContentPartFactory {
 	@Override
 	public IContentPart<? extends Node> createContentPart(Object content, Map<Object, Object> contextMap) {
 
-		if (content instanceof Model) {
-			return injector.getInstance(ModelPart.class);
+		if (content instanceof TextModel) {
+			return injector.getInstance(TextPart.class);
+		} else if (content instanceof InverterModel) {
+			return injector.getInstance(InverterPart.class);
 		} else {
 			throw new IllegalArgumentException(content.getClass().toString());
 		}

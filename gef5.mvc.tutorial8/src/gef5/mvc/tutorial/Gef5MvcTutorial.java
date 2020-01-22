@@ -1,93 +1,87 @@
 package gef5.mvc.tutorial;
 
-import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Function;
+import java.io.*;
+import java.util.*;
+import java.util.function.*;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
+import javax.xml.bind.*;
 
-import org.eclipse.core.commands.operations.IOperationHistory;
-import org.eclipse.core.commands.operations.IUndoContext;
-import org.eclipse.core.commands.operations.IUndoableOperation;
-import org.eclipse.gef5.fx.nodes.InfiniteCanvas;
-import org.eclipse.gef5.mvc.fx.domain.FXDomain;
-import org.eclipse.gef5.mvc.fx.viewer.FXViewer;
-import org.eclipse.gef5.mvc.models.ContentModel;
+import org.eclipse.core.commands.operations.*;
+import org.eclipse.gef.fx.nodes.*;
+import org.eclipse.gef.mvc.fx.domain.*;
+import org.eclipse.gef.mvc.fx.viewer.*;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
+import com.google.inject.*;
 
-import gef5.mvc.tutorial.model.Model;
-import gef5.mvc.tutorial.model.TextNode;
-import gef5.mvc.tutorial.parts.TextNodePart;
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import gef5.mvc.tutorial.model.*;
+import gef5.mvc.tutorial.parts.*;
+import javafx.application.*;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class Gef5MvcTutorial extends Application {
 
 	private Model model;
 	private JAXBContext jaxbContext;
-	private FXDomain domain;
+	private IDomain domain;
+	private IOperationHistory history;
+	private IUndoContext undoContext;
 
 	public static void main(String[] args) {
 		Application.launch(args);
 	}
 
+	@Override
 	public void start(final Stage primaryStage) throws Exception {
-		
-		
+
 		jaxbContext = JAXBContext.newInstance(Model.class, TextNode.class);
-		
+
 		Injector injector = Guice.createInjector(createGuiceModule());
-		
-		domain = injector.getInstance(FXDomain.class);
-		
-		FXViewer viewer = domain.getAdapter(FXViewer.class);
-		
+
+		domain = injector.getInstance(IDomain.class);
+		history = injector.getInstance(IOperationHistory.class);
+		undoContext = injector.getInstance(IUndoContext.class);
+
+		InfiniteCanvasViewer viewer = (InfiniteCanvasViewer) domain.getAdapter(IViewer.class);
+
 		HBox paneCtrl = new HBox();
 
 		AnchorPane paneDraw = new AnchorPane();
-		VBox vbox = new VBox( paneCtrl, paneDraw );
-		//vbox.setPrefWidth(Double.MAX_VALUE);
+		VBox vbox = new VBox(paneCtrl, paneDraw);
+		// vbox.setPrefWidth(Double.MAX_VALUE);
 		vbox.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
 		Button btnUndo = new Button("Undo");
 		btnUndo.setMaxWidth(Double.MAX_VALUE);
-		btnUndo.setDisable( true );
-		btnUndo.setOnAction( e -> {
+		btnUndo.setDisable(true);
+		btnUndo.setOnAction(e -> {
 			try {
-				IOperationHistory history = domain.getOperationHistory();
-				history.undo( domain.getUndoContext(), null, null );
+				IOperationHistory history = history;
+				history.undo(undoContext, null, null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 		});
-		
+
 		Button btnRedo = new Button("Redo");
 		btnRedo.setMaxWidth(Double.MAX_VALUE);
-		btnRedo.setDisable( true );
-		btnRedo.setOnAction( e -> {
+		btnRedo.setDisable(true);
+		btnRedo.setOnAction(e -> {
 			try {
-				IOperationHistory history = domain.getOperationHistory();
-				history.redo( domain.getUndoContext(), null, null );
+				IOperationHistory history = history;
+				history.redo(undoContext, null, null);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 		});
-		
-		domain.getOperationHistory().addOperationHistoryListener( e -> {
-			updateUnReDoButton(btnUndo, "Undo", e.getHistory()::getUndoHistory );
-			updateUnReDoButton(btnRedo, "Redo", e.getHistory()::getRedoHistory );
+
+		history.addOperationHistoryListener(e -> {
+			updateUnReDoButton(btnUndo, "Undo", e.getHistory()::getUndoHistory);
+			updateUnReDoButton(btnRedo, "Redo", e.getHistory()::getRedoHistory);
 		});
-		
+
 		paneCtrl.getChildren().addAll(btnUndo, btnRedo);
 
 		InfiniteCanvas drawingPane = viewer.getCanvas();
@@ -98,27 +92,27 @@ public class Gef5MvcTutorial extends Application {
 		AnchorPane.setLeftAnchor(drawingPane, 10d);
 		AnchorPane.setRightAnchor(drawingPane, 10d);
 		AnchorPane.setBottomAnchor(drawingPane, 10d);
-		
+
 		primaryStage.setScene(new Scene(vbox));
 
 		primaryStage.setResizable(true);
 		primaryStage.setWidth(640);
 		primaryStage.setHeight(480);
 		primaryStage.setTitle("GEF4 MVC Tutorial 8 - Layout and connections");
-		
+
 		primaryStage.show();
 
 		domain.activate();
 
 		List<Object> contents = createContents();
-		viewer.getAdapter(ContentModel.class).setContents(contents);
-		
+		viewer.getContents().addAll(contents);
+
 		TextNodePart p = (TextNodePart) viewer.getContentPartMap().get(model.getRootNode());
 		p.layout();
-		//TextNodeLayout nodeTop = createLayoutContext(contents);
-		
+		// TextNodeLayout nodeTop = createLayoutContext(contents);
+
 	}
-	
+
 //	static class TextNodeLayout implements ISubgraphLayout {
 //		private TextNode textNode;
 //		private TextNode parent;
@@ -184,7 +178,7 @@ public class Gef5MvcTutorial extends Application {
 //		public void removeNodes(INodeLayout[] nodes) {
 //			throw new UnsupportedOperationException();
 //		}
-//		
+//
 //	}
 //	private TextNodeLayout createLayoutContext(List<? extends TextNode> contents) {
 //		HashMap<TextNode, TextNodeLayout> layoutNodes = new HashMap<>();
@@ -196,7 +190,7 @@ public class Gef5MvcTutorial extends Application {
 //				root = tn;
 //			}
 //		}
-//		
+//
 //		for( TextNode tn : contents ){
 //			TextNodeLayout tnl = layoutNodes.get(tn);
 //			for( TextNode c : tn.childs ){
@@ -207,30 +201,29 @@ public class Gef5MvcTutorial extends Application {
 //		return layoutNodes.get(root);
 //	}
 
-	private void updateUnReDoButton( Button btn, String label, Function<IUndoContext, IUndoableOperation[]> getHist ){
-		IUndoableOperation[] entries = getHist.apply(domain.getUndoContext());
-		btn.setDisable( entries.length == 0 );
-		if( entries.length == 0 ){
-			btn.setText( label );
-		}
-		else {
-			IUndoableOperation currentEntry = entries[entries.length-1];
-			btn.setText( String.format("%s: %s", label, currentEntry.getLabel()));
+	private void updateUnReDoButton(Button btn, String label, Function<IUndoContext, IUndoableOperation[]> getHist) {
+		IUndoableOperation[] entries = getHist.apply(undoContext);
+		btn.setDisable(entries.length == 0);
+		if (entries.length == 0) {
+			btn.setText(label);
+		} else {
+			IUndoableOperation currentEntry = entries[entries.length - 1];
+			btn.setText(String.format("%s: %s", label, currentEntry.getLabel()));
 		}
 	}
-	
+
 	@Override
 	public void stop() throws Exception {
 		super.stop();
-		try{
+		try {
 			Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			marshaller.marshal( model, new File("model.xml"));
-		}
-		catch( Exception e){
+			marshaller.marshal(model, new File("model.xml"));
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+
 	protected List<Object> createContents() {
 //		if( Files.isReadable(Paths.get("model.xml"))){
 //			try{
@@ -242,19 +235,19 @@ public class Gef5MvcTutorial extends Application {
 //			}
 //		}
 
-		if( model == null ){
+		if (model == null) {
 			model = new Model();
 
-			TextNode ch1   = new TextNode( "Node-1");
-			TextNode ch11  = new TextNode( "Node-1-1");
-			TextNode ch12  = new TextNode( "Node-1-2");
-			TextNode ch13  = new TextNode( "Node-1-3");
-			TextNode ch121 = new TextNode( "Node-1-2-1");
-			TextNode ch131 = new TextNode( "Node-1-3-1");
-			TextNode ch132 = new TextNode( "Node-1-3-2");
-			
-			model.setRootNode( ch1 );
-			
+			TextNode ch1 = new TextNode("Node-1");
+			TextNode ch11 = new TextNode("Node-1-1");
+			TextNode ch12 = new TextNode("Node-1-2");
+			TextNode ch13 = new TextNode("Node-1-3");
+			TextNode ch121 = new TextNode("Node-1-2-1");
+			TextNode ch131 = new TextNode("Node-1-3-1");
+			TextNode ch132 = new TextNode("Node-1-3-2");
+
+			model.setRootNode(ch1);
+
 			ch1.addChild(ch11);
 			ch1.addChild(ch12);
 			ch1.addChild(ch13);
@@ -264,7 +257,7 @@ public class Gef5MvcTutorial extends Application {
 		}
 
 		model.init();
-		
+
 		LinkedList<Object> res = new LinkedList<>(model.allNodes);
 		model.getAllRelations(res);
 		return res;
