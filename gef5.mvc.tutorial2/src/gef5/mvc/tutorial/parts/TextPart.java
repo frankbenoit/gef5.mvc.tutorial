@@ -16,6 +16,9 @@ import javafx.scene.text.*;
 
 public class TextPart extends AbstractContentPart<Group> {
 
+	private final Text text = new Text();
+	private final GeometryNode<RoundedRectangle> rectangleNode = new GeometryNode<>();
+
 	@Override
 	public TextModel getContent() {
 		return (TextModel) super.getContent();
@@ -23,59 +26,50 @@ public class TextPart extends AbstractContentPart<Group> {
 
 	@Override
 	protected Group doCreateVisual() {
-		return new Group();
+
+		text.setFont(Font.font("Monospace", FontWeight.BOLD, 50));
+		text.setFill(Color.BLACK);
+		text.setStrokeWidth(2);
+		text.setTextOrigin(VPos.CENTER);
+		
+		rectangleNode.setGeometry(new RoundedRectangle(new Rectangle(), 10, 10));
+		rectangleNode.setStroke(Color.BLACK);
+		
+		Group group = new Group();
+		group.getChildren().addAll( rectangleNode, text );
+		
+		return group;
 	}
 
 	@Override
 	protected void doRefreshVisual(Group visual) {
-		TextModel model = getContent();
 
-		Text text = createText(model);
+		text.setText(getContent().getText());
+		
+		Bounds textBounds = text.getLayoutBounds();
 
-		Bounds textBounds = measureText(text);
+		refreshRectangleBounds(textBounds);
 
-		Rectangle rectBounds = getRectangleBounds(model, textBounds);
-
-		createRectangle(visual, model, rectBounds);
-		addText(visual, text, textBounds, rectBounds);
+		refreshText(visual, textBounds);
+		
+		visual.setTranslateX(getContent().getPosition().x);
+		visual.setTranslateY(getContent().getPosition().y);
 	}
 
-	private Rectangle getRectangleBounds(TextModel model, Bounds textBounds) {
+	private void refreshRectangleBounds(Bounds textBounds) {
+		TextModel model = getContent();
 		double textWidth = textBounds.getWidth();
 		double textHeight = textBounds.getHeight();
-
-		return new Rectangle(model.getPosition(), new Dimension(textWidth + textHeight, textHeight * 1.5));
+		Rectangle bounds = new Rectangle(new Point(), new Dimension(textWidth + textHeight, textHeight * 1.5));
+		rectangleNode.getGeometry().setBounds( bounds );
+		rectangleNode.setFill(model.getColor());
 	}
 
-	private Text createText(TextModel model) {
-		Text text = new Text(model.getText());
-		text.setFont(Font.font("Monospace", FontWeight.BOLD, 50));
-		text.setFill(Color.BLACK);
-		text.setStrokeWidth(2);
-		return text;
-	}
-
-	private Bounds measureText(Text text) {
-		new Scene(new Group(text));
-		text.applyCss();
-		return text.getLayoutBounds();
-	}
-
-	private void createRectangle(Group visual, TextModel model, Rectangle bounds) {
-		RoundedRectangle roundRect = new RoundedRectangle(bounds, 10, 10);
-		GeometryNode<RoundedRectangle> node = new GeometryNode<>(roundRect);
-		node.setFill(model.getColor());
-		node.setStroke(Color.BLACK);
-		node.setStrokeWidth(2);
-
-		visual.getChildren().add(node);
-	}
-
-	private void addText(Group visual, Text text, Bounds textBounds, Rectangle bounds) {
-		text.setTextOrigin(VPos.CENTER);
-		text.setY(bounds.getY() + bounds.getHeight() / 2);
-		text.setX(bounds.getX() + bounds.getWidth() / 2 - textBounds.getWidth() / 2);
-		visual.getChildren().add(text);
+	private void refreshText(Group visual, Bounds textBounds) {
+		text.setText(getContent().getText());
+		Rectangle bounds = rectangleNode.getGeometry().getBounds();
+		text.setY( bounds.getHeight() / 2);
+		text.setX( bounds.getWidth() / 2 - textBounds.getWidth() / 2);
 	}
 
 	@Override

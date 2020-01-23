@@ -19,8 +19,20 @@ public class ModelPartFactory implements IContentPartFactory {
 
 		if (content instanceof TextModel) {
 			return injector.getInstance(TextPart.class);
-		} else if (content instanceof InverterModel) {
-			return injector.getInstance(InverterPart.class);
+		} else if (content instanceof InverterGate) {
+			return injector.getInstance(InverterGatePart.class);
+		} else if (content instanceof AndGate) {
+			return injector.getInstance(AndGatePart.class);
+		} else if (content instanceof NandGate) {
+			AndGatePart res = injector.getInstance(AndGatePart.class);
+			res.setNand(true);
+			return res;
+		} else if (content instanceof NorGate) {
+			OrGatePart res = injector.getInstance(OrGatePart.class);
+			res.setNor(true);
+			return res;
+		} else if (content instanceof OrGate) {
+			return injector.getInstance(OrGatePart.class);
 		} else {
 			throw new IllegalArgumentException(content.getClass().toString());
 		}

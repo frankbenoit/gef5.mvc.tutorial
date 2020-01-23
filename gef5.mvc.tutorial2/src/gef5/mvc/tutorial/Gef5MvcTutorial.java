@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 public class Gef5MvcTutorial extends Application {
 
 	public static void main(String[] args) {
+		System.setProperty("javafx.sg.warn", "true");
 		Application.launch(args);
 	}
 
@@ -42,21 +43,21 @@ public class Gef5MvcTutorial extends Application {
 		// set viewer contents
 		viewer.getContents().setAll(createContents());
 		
-		viewer.getRootPart().getVisual().setEffect(createShadowEffect());
+		configureGlobalVisualEffect(viewer);
 	}
 
 	private void configureStage(final Stage stage, IViewer viewer, String title) {
 		stage.setScene(new Scene(viewer.getCanvas()));
 
 		stage.setResizable(true);
-		stage.setWidth(640);
-		stage.setHeight(480);
+		stage.setWidth(440);
+		stage.setHeight(600);
 		stage.setTitle(title);
 		stage.sizeToScene();
 		stage.show();
 	}
 	
-	private static Effect createShadowEffect() {
+	private void configureGlobalVisualEffect(IViewer viewer) {
 		DropShadow outerShadow = new DropShadow();
 		outerShadow.setRadius(3);
 		outerShadow.setSpread(0.2);
@@ -66,6 +67,7 @@ public class Gef5MvcTutorial extends Application {
 
 		Distant light = new Distant();
 		light.setAzimuth(-135.0f);
+		light.setElevation(70);
 
 		Lighting l = new Lighting();
 		l.setLight(light);
@@ -74,16 +76,44 @@ public class Gef5MvcTutorial extends Application {
 		l.setSpecularExponent(40.0f);
 
 		Blend effects = new Blend(BlendMode.MULTIPLY );
-//		effects.setTopInput(l);
+		effects.setTopInput(l);
 		effects.setBottomInput(outerShadow);
 
-		return effects;
+		applyEffectOnContentLayer(viewer, effects);
 	}
 
-	protected List<? extends Object> createContents() {
-		InverterModel inv1 = new InverterModel( 120, 210, Orientation.EAST );
-		InverterModel inv2 = new InverterModel( 180, 210, Orientation.NORTH );
-		return Arrays.asList(new TextModel(), inv1, inv2 );
+	private void applyEffectOnContentLayer(IViewer viewer, Blend effects) {
+		// LayeredRootPart is the default impl for the root part, configured in MvcFxModule
+		// see https://www.eclipse.org/forums/index.php/m/1820560/#msg_1820560
+		((LayeredRootPart) viewer.getRootPart()).getContentLayer().setEffect(effects);
+	}
+
+	protected List<?> createContents() {
+		ArrayList<Object> res = new ArrayList<>();
+		
+		res.add(new TextModel());
+		
+		for( int i = 0; i < Orientation.values().length; i++ ) {
+			res.add(new InverterGate( 50 + i*80, 200, Orientation.values()[i] ));
+		}
+		
+		for( int i = 0; i < Orientation.values().length; i++ ) {
+			res.add(new AndGate( 50 + i*80, 280, Orientation.values()[i] ));
+		}
+
+		for( int i = 0; i < Orientation.values().length; i++ ) {
+			res.add(new OrGate( 50 + i*80, 360, Orientation.values()[i] ));
+		}
+		
+		for( int i = 0; i < Orientation.values().length; i++ ) {
+			res.add(new NandGate( 50 + i*80, 440, Orientation.values()[i] ));
+		}
+		
+		for( int i = 0; i < Orientation.values().length; i++ ) {
+			res.add(new NorGate( 50 + i*80, 520, Orientation.values()[i] ));
+		}
+		
+		return res;
 	}
 
 	protected Module createGuiceModule() {

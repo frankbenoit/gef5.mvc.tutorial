@@ -19,6 +19,11 @@ public class ModelPart extends AbstractContentPart<GeometryNode<RoundedRectangle
 	}
 
 	@Override
+	protected GeometryNode<RoundedRectangle> doCreateVisual() {
+		return new GeometryNode<>();
+	}
+	
+	@Override
 	protected void doRefreshVisual(GeometryNode<RoundedRectangle> visual) {
 		Model model = getContent();
 		visual.setGeometry(new RoundedRectangle(model.getRect(), 10, 10));
@@ -35,11 +40,6 @@ public class ModelPart extends AbstractContentPart<GeometryNode<RoundedRectangle
 	@Override
 	public List<? extends Object> doGetContentChildren() {
 		return Collections.emptyList();
-	}
-
-	@Override
-	protected GeometryNode<RoundedRectangle> doCreateVisual() {
-		return new GeometryNode<>();
 	}
 
 }

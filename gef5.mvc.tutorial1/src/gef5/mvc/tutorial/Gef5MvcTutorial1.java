@@ -18,7 +18,7 @@ import javafx.scene.effect.Light.*;
 import javafx.scene.paint.*;
 import javafx.stage.Stage;
 
-public class Gef5MvcTutorial extends Application {
+public class Gef5MvcTutorial1 extends Application {
 
 	public static void main(String[] args) {
 		Application.launch(args);
@@ -39,9 +39,9 @@ public class Gef5MvcTutorial extends Application {
 		// activate domain only after viewers have been hooked
 		domain.activate();
 		
-
 		// set viewer contents
 		viewer.getContents().setAll(createContents());
+		
 		configureGlobalVisualEffect(viewer);
 	}
 
@@ -78,7 +78,13 @@ public class Gef5MvcTutorial extends Application {
 		effects.setTopInput(l);
 		effects.setBottomInput(outerShadow);
 
-		viewer.getRootPart().getVisual().setEffect(effects);
+		applyEffectOnContentLayer(viewer, effects);
+	}
+
+	private void applyEffectOnContentLayer(IViewer viewer, Blend effects) {
+		// LayeredRootPart is the default impl for the root part, configured in MvcFxModule
+		// see https://www.eclipse.org/forums/index.php/m/1820560/#msg_1820560
+		((LayeredRootPart) viewer.getRootPart()).getContentLayer().setEffect(effects);
 	}
 
 	protected List<? extends Object> createContents() {

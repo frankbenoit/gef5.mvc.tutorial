@@ -4,14 +4,14 @@ import org.eclipse.gef.geometry.planar.*;
 
 import javafx.scene.paint.*;
 
-public class InverterModel {
+public class InverterGate {
 
 	public final Point position = new Point();
 
 	private Orientation orientation = Orientation.NORTH;
 	private Color color = Color.LIGHTSKYBLUE;
 
-	public InverterModel(double x, double y, Orientation orientation) {
+	public InverterGate(double x, double y, Orientation orientation) {
 		this.orientation = orientation;
 		position.setLocation(x, y);
 	}
