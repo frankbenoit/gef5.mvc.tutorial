@@ -122,8 +122,7 @@ public class Gef5MvcTutorial extends Application {
 			protected void configure() {
 				super.configure();
 
-				binder().bind(new TypeLiteral<IContentPartFactory>() {
-				}).toInstance(new ModelPartFactory());
+				bind(IContentPartFactory.class).to(ModelPartFactory.class);
 
 			}
 		};

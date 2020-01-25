@@ -1,6 +1,5 @@
 package gef5.mvc.tutorial.parts;
 
-import java.beans.*;
 import java.util.*;
 
 import org.eclipse.gef.fx.nodes.*;
@@ -16,10 +15,10 @@ import javafx.scene.*;
 import javafx.scene.paint.*;
 import javafx.scene.text.*;
 
-public class TextNodePart extends AbstractContentPart<Group> implements PropertyChangeListener {
+public class TextNodePart extends AbstractContentPart<Group> {
 
-	private Text text;
-	private GeometryNode<RoundedRectangle> fxRoundedRectNode;
+	private final Text text = new Text();
+	private final GeometryNode<RoundedRectangle> rectangleNode = new GeometryNode<>();
 
 	private final ChangeListener<Object> objectObserver = new ChangeListener<Object>() {
 		@Override
@@ -47,67 +46,52 @@ public class TextNodePart extends AbstractContentPart<Group> implements Property
 
 	@Override
 	protected Group doCreateVisual() {
-		Group group = new Group();
-		text = new Text();
-		fxRoundedRectNode = new GeometryNode<>();
 
-		group.getChildren().add(fxRoundedRectNode);
-		group.getChildren().add(text);
+		text.setFont(Font.font("Monospace", FontWeight.BOLD, 50));
+		text.setFill(Color.BLACK);
+		text.setStrokeWidth(2);
+		text.setTextOrigin(VPos.CENTER);
+
+		rectangleNode.setGeometry(new RoundedRectangle(new Rectangle(), 10, 10));
+		rectangleNode.setStroke(Color.BLACK);
+
+		Group group = new Group();
+		group.getChildren().addAll(rectangleNode, text);
+
 		return group;
 	}
 
 	@Override
 	protected void doRefreshVisual(Group visual) {
+
+		text.setText(getContent().getText());
+
+		Bounds textBounds = text.getLayoutBounds();
+
+		refreshRectangleBounds(textBounds);
+
+		refreshText(visual, textBounds);
+
+		visual.setTranslateX(getContent().getPosition().x);
+		visual.setTranslateY(getContent().getPosition().y);
+	}
+
+	private void refreshRectangleBounds(Bounds textBounds) {
 		TextNode model = getContent();
+		double textWidth = textBounds.getWidth();
+		double textHeight = textBounds.getHeight();
 
-		Font font = Font.font("Monospace", FontWeight.BOLD, 50);
-		Color textColor = Color.BLACK;
-		int textStrokeWidth = 2;
+		Rectangle bounds = new Rectangle(new Point(), new Dimension(textWidth + textHeight, textHeight * 1.5));
 
-		text.setText(model.getText());
-		text.setFont(font);
-		text.setFill(textColor);
-		text.setStrokeWidth(textStrokeWidth);
-
-		// measure size
-		Bounds textBounds = msrText(model.getText(), font, textStrokeWidth);
-
-		Rectangle bounds = new Rectangle(model.getPosition(),
-				new Dimension(textBounds.getWidth() + textBounds.getHeight(), textBounds.getHeight() * 1.5));
-
-		// the rounded rectangle
-		{
-			RoundedRectangle roundRect = new RoundedRectangle(bounds, 10, 10);
-			fxRoundedRectNode.setGeometry(roundRect);
-			fxRoundedRectNode.setFill(model.getColor());
-			fxRoundedRectNode.setStroke(Color.BLACK);
-			fxRoundedRectNode.setStrokeWidth(2);
-			fxRoundedRectNode.toBack();
-		}
-		// the text
-		{
-			text.setTextOrigin(VPos.CENTER);
-			text.setY(bounds.getY() + bounds.getHeight() / 2);
-			text.setX(bounds.getX() + bounds.getWidth() / 2 - textBounds.getWidth() / 2);
-			text.toFront();
-		}
+		rectangleNode.setGeometry(new RoundedRectangle(bounds, 10, 10));
+		rectangleNode.setFill(model.getColor());
 	}
 
-	private Bounds msrText(String string, Font font, int textStrokeWidth) {
-		Text msrText = new Text(string);
-		msrText.setFont(font);
-		msrText.setStrokeWidth(textStrokeWidth);
-
-		new Scene(new Group(msrText));
-		Bounds textBounds = msrText.getLayoutBounds();
-		return textBounds;
-	}
-
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getSource() == getContent()) {
-			refreshVisual();
-		}
+	private void refreshText(Group visual, Bounds textBounds) {
+		text.setText(getContent().getText());
+		Rectangle bounds = rectangleNode.getGeometry().getBounds();
+		text.setY(bounds.getHeight() / 2);
+		text.setX(bounds.getWidth() / 2 - textBounds.getWidth() / 2);
 	}
 
 	@Override

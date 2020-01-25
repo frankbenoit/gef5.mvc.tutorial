@@ -1,11 +1,10 @@
 package gef5.mvc.tutorial.model;
 
-import org.eclipse.gef.geometry.planar.Point;
+import org.eclipse.gef.geometry.planar.*;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.scene.paint.Color;
+import javafx.beans.property.*;
+import javafx.beans.value.*;
+import javafx.scene.paint.*;
 
 public class TextNode {
 
@@ -20,10 +19,10 @@ public class TextNode {
 	public TextNode(double x, double y, String text) {
 		Point point = new Point(x, y);
 
-		this.position = new SimpleObjectProperty<Point>(this, POSITION_PROPERTY);
-		this.text = new SimpleObjectProperty<String>(this, TEXT_PROPERTY);
+		position = new SimpleObjectProperty<>(this, POSITION_PROPERTY);
+		this.text = new SimpleObjectProperty<>(this, TEXT_PROPERTY);
 
-		this.position.setValue(point);
+		position.setValue(point);
 		this.text.setValue(text);
 	}
 
@@ -49,14 +48,21 @@ public class TextNode {
 
 	public void doChange() {
 		setPosition(new Point(getPosition().x + Math.random() * 10 - 5, getPosition().y + Math.random() * 10 - 5));
-		setText(String.format("%s %s", getText().split(" ")[0], Math.round(Math.random() * 100)));
+
+		if (Math.random() > 0.5) {
+			setText(String.format("%s %s", getText().split(" ")[0], Math.round(Math.random() * 100)));
+		} else {
+			setText(getText().split(" ")[0]);
+		}
 	}
 
 	public void addPropertyChangeListener(ChangeListener<Object> pointObserver) {
 		position.addListener(pointObserver);
+		text.addListener(pointObserver);
 	}
 
 	public void removePropertyChangeListener(ChangeListener<Object> pointObserver) {
 		position.removeListener(pointObserver);
+		text.removeListener(pointObserver);
 	}
 }

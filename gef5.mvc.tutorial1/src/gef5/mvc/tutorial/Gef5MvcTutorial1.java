@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 public class Gef5MvcTutorial1 extends Application {
 
 	public static void main(String[] args) {
+		System.setProperty("javafx.sg.warn", "true");
 		Application.launch(args);
 	}
 
