@@ -1,6 +1,6 @@
 package gef5.mvc.tutorial.model;
 
-import java.util.LinkedList;
+import java.util.*;
 
 public class Model {
 

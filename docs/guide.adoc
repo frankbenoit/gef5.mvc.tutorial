@@ -1,0 +1,433 @@
+GEF 5 tutorial
+==============
+:icons: font
+:toc:
+
+
+Author Frank Benoit <fr@nk-benoit.de>
+
+
+== Part 1 - Minimal MVC
+
+This is a re-make of my previous https://fbenoit.blogspot.com/2015/11/gef4-tutorial-part1.html[GEF4 tutorial], now for GEF5.
+
+The source for this tutorial can be retrieved from github: https://github.com/frankbenoit/gef5.mvc.tutorial/tree/master/gef5.mvc.tutorial1/src/gef5/mvc/tutorial[gef5.mvc.tutorial1].
+
+GEF5 is the Graphical Editing Framework in the Eclipse ecosystem. +
+See: https://github.com/eclipse/gef/wiki/MVC +
+See: http://nyssen.blogspot.com/2017/02/gef4-1-gef-5.html#Merger%20of%20MVC%20and%20MVC.FX[GEF4 + 1 = GEF 5]
+
+I have special interest in the Model-View-Controller part of this framework, but at the time of my writing, there is only the "Logo" example available. I found it quite complex, for understanding the basic concepts. So I started to reduce it and thought others could have a benefit from my work. Let's see.
+
+=== Tutorial step 1
+
+The most trivial example for MVC, is having a model, a controller (in GEF4+ speak "Part") and the visual.
+The model is a POJO, storing information only application specific information. Here i store the rectangle coordinates and the color, of what i want to visualize.
+
+The part is a the ModelPart class, that is the one transforming the model information into a presentation.
+
+GEF makes use of Google Guice. You may have a read about it to understand the concept: https://github.com/google/guice, see the linked video there and the user guide.
+
+The only binding needed for this minimal example is the interface IContentPartFactory to the single instance of ModelPartFactory.
+
+[source,java]
+....
+protected void configure() {
+    super.configure();
+    bind(IContentPartFactory.class).to(ModelPartFactory.class);
+}
+....
+
+When the application's model objects are passed into the GEF MVC as content, the ModelPartFactory is responsible to create the model parts. For one content object, one model part is created.
+The ModelPartFactory might use instanceof tests to check for the model types and create the appropriate part class instance. Also information of the model may be used to determine the correct type for the part.
+
+The ModelParts in this examle extend AbstractContentPart<GeometryNode<RoundedRectangle>>.
+Ok this is not easy. I want to draw a RoundedRectangle, which is a GEF5 geometry. The GeometryNode is an adaption to have it as FX Path. The AbstractContentPart is an abstract content part implementation, acting on the given JavaFX node element, here the GeometryNode. 
+
+=== MVC structure
+
+There is a single model object that a single part transfers into a single visual object.
+
+
+
+[plantuml,part1-model,png]
+....
+object model
+object "part: IContentPart" as part
+object visual
+model -right-> part
+part  -right-> visual
+....
+
+The model object is set as the content for the viewer, this calls the IContentPartFactory to create a IContentPart.
+
+The content part is then responsible to create the visual, the JavaFX objects to represent.
+
+Now it looks like this:
+
+image:images/part1_all.png[align="center",width="50%"]
+
+
+You see a viewer with the grid dots.
+
+The rounded rectangle is shown with a drop shadow effect. It is configured in gef5.mvc.tutorial.Gef5MvcTutorial.configureGlobalVisualEffect(IViewer)
+
+.Realize what you can do with it:
+ - Mousewheel can do up/down left/right scrolling
+ - Ctrl+Mousewheel is zooming
+ - With the mouse, you can drag a mark rectangle open, but it is not yet marking.
+
+
+image:images/part1_select.png[align="center", width="50%"]
+
+
+
+== Part 2 - Multiple Visuals
+
+In this step 2 of the tutorial, we will have composed visuals.
+
+A text node, that is a rounded rectangle from before, but with a text in it and the dimension of the rectangle is adjusted by the text.
+
+
+And there will be symbols for logic gates, that illustrate how to work with Circle, PolyLine, Path, ...
+
+
+For the source code see github https://github.com/frankbenoit/gef5.mvc.tutorial[gef5.mvc.tutorial2]
+
+
+
+The ModelParts are now extending AbstractContentPart<Group> this allows to have multiple child nodes and to compose the visual presentation.
+
+
+
+=== MVC structure
+Compared to step 1, the visual is now a composition of multiple objects.
+
+
+[plantuml,part2-model,png]
+....
+package Model {
+    object model
+}
+package Parts {
+    object "part: IContentPart" as part
+}
+package Visuals {
+    object group
+    object rectangle
+    object text
+}
+model -right-> part
+part  -right-> group
+group --> rectangle
+group --> text
+....
+
+
+
+=== The result
+
+Now it looks like this:
+
+image:images/part2_all.png[align="center", width="50%"]
+
+== Part 3 - Model updates
+
+In step 3 of this tutorial, the model, the parts and the visuals are compositions of multiple objects. Each model node type is mapped with the ModelPartFactory to a corresponding content part (ModelPart and TextNodePart).
+
+
+
+For the source of this tutorial step see github - https://github.com/frankbenoit/gef5.mvc.tutorial/tree/master/gef5.mvc.tutorial3/src/gef5/mvc/tutorial[gef5.mvc.tutorial3].
+
+
+In the previous example the model was a flat list of objects, now we have a tree like model. One instance of Model having 2 childs of TextModel.
+That means, the viewer gets only a single object assigned as content, the instance of Model. The ModelPart implements the doGetContentChildren, to tell GEF about more content children:
+
+[source,java]
+....
+@Override
+public List<? extends TextNode> doGetContentChildren() {
+    Model model = getContent();
+    return model.getNodes();
+}
+....
+
+The model and part elements need to implement some type of update mechanism. Here the bean property listeners are used. You might use the javafx ObservableValues or something else.
+
+However, in the end the "refreshVisual()" of the part needs to be called.
+
+This example has a button on the top, that applies changes to the model. So the text and the position of the boxes is varied.
+
+image:images/part3_all.png[]
+
+
+== Part 4 - Dragging and store to model
+
+In step 4 of this tutorial, the text nodes can be dragged around with the mouse. The new positions are stored into the model object.
+
+The model as whole is restored and persisted at application start and end.
+
+For the source of this tutorial step see github - https://github.com/frankbenoit/gef5.mvc.tutorial/tree/master/gef5.mvc.tutorial4/src/gef5/mvc/tutorial[gef5.mvc.tutorial4].
+
+
+
+NOTE: parts of this tutorial are copied from other examples or from forum postings.
+
+
+
+=== Restoring and persisting the Model
+
+
+For mapping the model, here object serialization is used.
+
+The model class TextNode implements the 
+[source,java]
+....
+private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
+    s.writeDouble(position.get().x);
+    s.writeDouble(position.get().y);
+    s.writeUTF(text.get());
+}
+
+private void readObject(java.io.ObjectInputStream s) throws java.lang.ClassNotFoundException, java.io.IOException {
+    reset();
+    double x = s.readDouble();
+    double y = s.readDouble();
+    String t = s.readUTF();
+    position.setValue(new Point(x, y));
+    text.setValue(t);
+}
+....
+
+In the applications start and stop methods, the loading and persisting code is integrated.
+
+=== The Adapter pattern used in GEF5
+
+
+Eclipse support the Adapter pattern, see this article:
+
+http://www.eclipse.org/articles/article.php?file=Article-Adapters/index.html
+
+In summary, it means, objects in Eclipse context that implement the IAdaptable interface, can give an implementation of a requested interface.
+
+In GEF4, this pattern was enhanced. 
+
+See this article by Alexander Nyßen:
+http://nyssen.blogspot.de/2014/11/iadaptable-gef4s-interpretation-of.html[IAdaptable - GEF4's Interpretation of a Classic ]
+
+
+In addition to the Eclipse adapters, in GEF4, adapters can be configured at runtime, can exists for the same interface type in different roles, can have a reference to the adapted object.
+
+=== Making the nodes selectable
+
+
+So in GEF4, the configuration of the Guice module is one of the important control points of a application.
+
+
+
+To make the nodes in the tutorial selectable, the following code was taken from the Logo example.
+
+
+
+[source,java]
+....
+@Override
+protected void bindAbstractContentPartAdapters( MapBinder<AdapterKey<?>, Object> adapterMapBinder) {
+
+    super.bindAbstractContentPartAdapters(adapterMapBinder);
+    // register (default) interaction policies (which are based on viewer
+    // models and do not depend on transaction policies)
+    adapterMapBinder
+        .addBinding(AdapterKey.get(ClickDragTool.CLICK_TOOL_POLICY_KEY))
+        .to(FXFocusAndSelectOnClickPolicy.class);
+
+
+    adapterMapBinder
+        .addBinding(AdapterKey.get(HoverTool.TOOL_POLICY_KEY))
+        .to(FXHoverOnHoverPolicy.class);
+
+    // geometry provider for selection feedback
+    adapterMapBinder
+        .addBinding(AdapterKey.get(
+            new TypeToken<Provider<IGeometry>>(){},
+        DefaultFeedbackPartFactory.SELECTION_FEEDBACK_GEOMETRY_PROVIDER))
+        .to(VisualBoundsGeometryProvider.class);
+
+    // geometry provider for hover feedback
+    adapterMapBinder
+        .addBinding(AdapterKey.get(
+            new TypeToken<Provider<IGeometry>>(){},
+            DefaultFeedbackPartFactory.HOVER_FEEDBACK_GEOMETRY_PROVIDER))
+        .to(VisualBoundsGeometryProvider.class);
+}
+....
+
+
+Normally shown node:
+
+image:images/part4_node_normal.png[]
+
+The mouse hoovering over the node, creates a surrounding box marker.
+
+image:images/part4_node_hoover.png[]
+
+Clicking makes the box darker, so it is shown as selected.
+
+image:images/part4_node_selected.png[]
+
+=== Making the node dragable
+
+In the Guice module configure:
+
+[source,java]
+....
+bindTextNodePartAdapters(AdapterMaps.getAdapterMapBinder(binder(), TextNodePart.class));
+....
+
+
+
+The implementation:
+
+
+
+[source,java]
+....
+protected void bindTextNodePartAdapters( MapBinder<AdapterKey<?>, Object> adapterMapBinder) {
+    // register resize/transform policies (writing changes also to model)
+    adapterMapBinder
+        .addBinding(AdapterKey.get(TransformPolicy.class))
+        .to(TransformPolicy.class);
+    // interaction policies to relocate on drag
+    adapterMapBinder
+        .addBinding( AdapterKey.get(ClickDragTool.DRAG_TOOL_POLICY_KEY))
+        .to(TranslateSelectedOnDragPolicy.class);
+}
+....
+
+
+
+This uses the standard components to make items dragable.
+
+It is surprising that this works, as there is yet no linkage to the model. 
+
+Try it out!
+
+It even works if you press the button to update the model (vary the values).
+
+The dragging information is stored in the visuals as a transformation. The model and part can continue to work with the original coordinates.
+
+
+
+Updating the model
+
+
+To give the whole a sense, the position of the TextNode shall be stored to the model. Then it can be persisted and restored.
+
+
+
+For this, the ItemTransformPolicy is extended from FXTransformPolicy.
+
+
+
+[source,java]
+....
+public class ItemTransformPolicy extends FXTransformPolicy {
+    @Override
+    public ITransactionalOperation commit() {
+        ITransactionalOperation visualOperation = super.commit();
+        ITransactionalOperation modelOperation = createUpdateModelOperation();
+        ForwardUndoCompositeOperation commit = new ForwardUndoCompositeOperation("Translate()");
+        if (visualOperation != null) commit.add(visualOperation);
+        if (modelOperation != null) commit.add(modelOperation);
+        return commit.unwrap(true);
+    }
+
+    private ITransactionalOperation createUpdateModelOperation() {
+        return new ChangeTextNodePositionOperation(getHost());
+    }
+}
+....
+
+
+
+The ItemTransformPolicy combines the original FXTranformPolicy with a new opereration, the ChangeTextNodePositionOperation. The new operation shall remove the tranformation from the visuals, and store the information into the mode.
+
+
+[source,java]
+....
+public class ChangeTextNodePositionOperation extends AbstractOperation implements ITransactionalOperation {
+
+    TextNodePart part;
+    public ChangeTextNodePositionOperation(IVisualPart<Node, ? extends Node> part) {
+        super( "" );
+        Assert.isLegal(part instanceof TextNodePart, "Only TestNodePart supported for ChangeItemPositionOperation");
+        this.part = (TextNodePart) part;
+    }
+
+    @Override
+    public IStatus execute(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
+        Affine transform = part.getAdapter(FXTransformPolicy.TRANSFORM_PROVIDER_KEY).get();
+        // tell the part, which updates the model, will also trigger a doRefreshVisuals
+        part.translate(transform.getTx(), transform.getTy());
+        // reset the transformation
+        transform.setTx(0);
+        transform.setTy(0);
+        return Status.OK_STATUS;
+    }
+
+    @Override
+    public IStatus redo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
+        return null;
+    }
+
+    @Override
+    public IStatus undo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
+        return null;
+    }
+
+    @Override
+    public boolean isNoOp() {
+        return false;
+    }
+}
+....
+
+
+
+Last step is to configure the ItemTranformPolicy to be used as implementation for FXTransformPolicy.
+
+
+
+[source,java]
+....
+    adapterMapBinder
+        .addBinding(AdapterKey.get(FXTransformPolicy.class))
+        .to(ItemTransformPolicy.class);
+....
+
+
+
+
+
+
+
+
+
+[plantuml,part3-model-text,png]
+....
+package Model {
+    object TextNode
+}
+package Parts {
+    object TextNodePart
+}
+package Visuals {
+    object Group
+    object RoundedRectangle
+    object Text
+    Group --> RoundedRectangle
+    Group --> Text
+}
+TextNode --> TextNodePart
+TextNodePart --> Group
+....

@@ -1,14 +1,15 @@
 package gef5.mvc.tutorial.model;
 
-import java.util.LinkedList;
+import java.io.*;
+import java.util.*;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+public class Model implements Serializable {
 
-@XmlRootElement
-public class Model {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -6693402486686028380L;
 
-	@XmlElement
 	LinkedList<TextNode> nodes = new LinkedList<>();
 
 	public LinkedList<TextNode> getNodes() {

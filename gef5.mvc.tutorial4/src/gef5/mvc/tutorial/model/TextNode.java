@@ -1,39 +1,44 @@
 package gef5.mvc.tutorial.model;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+import java.io.*;
 
-import org.eclipse.gef.geometry.planar.Point;
+import org.eclipse.gef.geometry.planar.*;
 
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.scene.paint.Color;
+import javafx.beans.property.*;
+import javafx.beans.value.*;
+import javafx.scene.paint.*;
 
-@XmlRootElement
-public class TextNode {
+public class TextNode implements Serializable {
 
-	@XmlTransient
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -7445815811387721542L;
+
 	public static final String POSITION_PROPERTY = "position";
-	@XmlTransient
 	public static final String TEXT_PROPERTY = "text";
 
-	@XmlTransient // handled over setter/getter
-	private SimpleObjectProperty<Point> position = new SimpleObjectProperty<Point>(this, POSITION_PROPERTY);
+	private SimpleObjectProperty<Point> position;
+	private SimpleObjectProperty<String> text;
 
-	@XmlTransient // handled over setter/getter
-	private SimpleObjectProperty<String> text = new SimpleObjectProperty<String>(this, TEXT_PROPERTY);
-
-	@XmlTransient // not handled now
-	private Color color = Color.LIGHTSKYBLUE;
+	private Color color;
 
 	public TextNode() {
-		this.position.setValue(new Point(0, 0));
-		this.text.setValue("");
+		reset();
 	}
 
 	public TextNode(double x, double y, String text) {
-		this.position.setValue(new Point(x, y));
+		reset();
+		position.setValue(new Point(x, y));
 		this.text.setValue(text);
+	}
+
+	private void reset() {
+		position = new SimpleObjectProperty<>(this, POSITION_PROPERTY);
+		text = new SimpleObjectProperty<>(this, TEXT_PROPERTY);
+		color = Color.LIGHTSKYBLUE;
+		position.setValue(new Point(0, 0));
+		text.setValue("");
 	}
 
 	public String getText() {
@@ -69,6 +74,21 @@ public class TextNode {
 	public void removePropertyChangeListener(ChangeListener<Object> observer) {
 		position.removeListener(observer);
 		text.removeListener(observer);
+	}
+
+	private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
+		s.writeDouble(position.get().x);
+		s.writeDouble(position.get().y);
+		s.writeUTF(text.get());
+	}
+
+	private void readObject(java.io.ObjectInputStream s) throws java.lang.ClassNotFoundException, java.io.IOException {
+		reset();
+		double x = s.readDouble();
+		double y = s.readDouble();
+		String t = s.readUTF();
+		position.setValue(new Point(x, y));
+		text.setValue(t);
 	}
 
 }

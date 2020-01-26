@@ -94,6 +94,8 @@ public class TextNodePart extends AbstractContentPart<Group> implements ITransfo
 			text.toFront();
 		}
 		{
+			Point position = model.getPosition();
+			setVisualTransform(new Affine(Transform.translate(position.x, position.y)));
 		}
 	}
 
@@ -123,17 +125,13 @@ public class TextNodePart extends AbstractContentPart<Group> implements ITransfo
 
 	@Override
 	public Affine getContentTransform() {
-		TextNode model = getContent();
-		Point position = model.getPosition();
-		Affine res = new Affine();
-		res.setToTransform(Transform.translate(position.x, position.y));
-		return res;
+		Point pos = getContent().getPosition();
+		return new Affine(Transform.translate(pos.x, pos.y));
 	}
 
 	@Override
 	public void setContentTransform(Affine totalTransform) {
-		TextNode model = getContent();
-		model.setPosition(new Point(totalTransform.getTx(), totalTransform.getTy()));
+		getContent().setPosition(new Point(totalTransform.getTx(), totalTransform.getTy()));
 	}
 
 }

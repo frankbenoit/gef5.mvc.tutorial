@@ -1,0 +1,43 @@
+plugins {
+    id 'org.asciidoctor.jvm.convert' version '3.0.0'
+}
+
+repositories {
+	mavenCentral();
+}
+
+asciidoctorj {
+    modules {
+       diagram.use() 
+    }
+}
+
+version = '1.234'
+
+
+asciidoctor {
+
+	// configure source and output files and folders
+	sourceDir = file('docs')
+	sources {
+		include '*.adoc'
+	}
+	outputDir = file('docshtml')
+	resources {
+		from('docs') {
+			include 'images/**/*.png'
+		}
+		into "."
+	}
+
+	// good to see what the build is doing...
+	logDocuments = true
+
+	attributes 'source-highlighter': 'prettify',
+			toc                 : 'left',
+			idprefix            : '',
+			idseparator         : '-'
+			
+}
+
+defaultTasks 'asciidoctor'

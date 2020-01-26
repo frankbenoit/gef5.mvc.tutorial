@@ -1,0 +1,4 @@
+rootProject.name = 'gef5.mvc.tutorial'
+
+include ':gef5.mvc.tutorial4'
+
