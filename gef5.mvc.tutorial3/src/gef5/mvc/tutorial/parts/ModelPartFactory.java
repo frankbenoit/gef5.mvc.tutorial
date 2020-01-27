@@ -16,6 +16,8 @@ public class ModelPartFactory implements IContentPartFactory {
 
 	@Override
 	public IContentPart<? extends Node> createContentPart(Object content, Map<Object, Object> contextMap) {
+		System.out.println("ModelPartFactory.createContentPart() " + content);
+		contextMap.forEach((k, v) -> System.out.printf("%s -> %s%n"));
 
 		if (content instanceof Model) {
 			return injector.getInstance(ModelPart.class);

@@ -441,7 +441,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>GEF 5 tutorial</h1>
 <div class="details">
-<span id="revnumber">version 1.234</span>
+<span id="revnumber">version 1.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -458,13 +458,21 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#the-result">The result</a></li>
 </ul>
 </li>
-<li><a href="#part-3-model-updates">Part 3 - Model updates</a></li>
+<li><a href="#part-3-model-hierarchy-and-updates">Part 3 - Model hierarchy and updates</a>
+<ul class="sectlevel2">
+<li><a href="#the-model-tree">The model tree</a></li>
+<li><a href="#update-ui-on-model-change">Update UI on model change</a></li>
+</ul>
+</li>
 <li><a href="#part-4-dragging-and-store-to-model">Part 4 - Dragging and store to model</a>
 <ul class="sectlevel2">
 <li><a href="#restoring-and-persisting-the-model">Restoring and persisting the Model</a></li>
 <li><a href="#the-adapter-pattern-used-in-gef5">The Adapter pattern used in GEF5</a></li>
+<li><a href="#the-gef-guice-global-defaults">The GEF Guice global defaults</a></li>
+<li><a href="#bindings-for-the-content-part">Bindings for the content part</a></li>
 <li><a href="#making-the-nodes-selectable">Making the nodes selectable</a></li>
 <li><a href="#making-the-node-dragable">Making the node dragable</a></li>
+<li><a href="#updating-the-model">Updating the model</a></li>
 </ul>
 </li>
 </ul>
@@ -482,33 +490,57 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="part-1-minimal-mvc">Part 1 - Minimal MVC</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This is a re-make of my previous <a href="https://fbenoit.blogspot.com/2015/11/gef4-tutorial-part1.html">GEF4 tutorial</a>, now for GEF5.</p>
+<p>This is a re-make of my previous<br>
+<a href="https://fbenoit.blogspot.com/2015/11/gef4-tutorial-part1.html">GEF4 tutorial</a>,
+now for GEF5.</p>
 </div>
 <div class="paragraph">
-<p>The source for this tutorial can be retrieved from github: <a href="https://github.com/frankbenoit/gef5.mvc.tutorial/tree/master/gef5.mvc.tutorial1/src/gef5/mvc/tutorial">gef5.mvc.tutorial1</a>.</p>
+<p>The source for this tutorial can be retrieved from github:
+<a href="https://github.com/frankbenoit/gef5.mvc.tutorial/tree/master/gef5.mvc.tutorial1/src/gef5/mvc/tutorial">gef5.mvc.tutorial1</a>.</p>
 </div>
 <div class="paragraph">
-<p>GEF5 is the Graphical Editing Framework in the Eclipse ecosystem.<br>
-See: <a href="https://github.com/eclipse/gef/wiki/MVC" class="bare">https://github.com/eclipse/gef/wiki/MVC</a><br>
+<p>GEF5 is the Graphical Editing Framework in the Eclipse ecosystem.
+See: <a href="https://github.com/eclipse/gef/wiki/MVC" class="bare">https://github.com/eclipse/gef/wiki/MVC</a>
 See: <a href="http://nyssen.blogspot.com/2017/02/gef4-1-gef-5.html#Merger%20of%20MVC%20and%20MVC.FX">GEF4 + 1 = GEF 5</a></p>
 </div>
 <div class="paragraph">
-<p>I have special interest in the Model-View-Controller part of this framework, but at the time of my writing, there is only the "Logo" example available. I found it quite complex, for understanding the basic concepts. So I started to reduce it and thought others could have a benefit from my work. Let&#8217;s see.</p>
+<p>I have special interest in the Model-View-Controller part of this framework,
+but at the time of my writing, there is only the "Logo" example available.
+I found it quite complex, for understanding the basic concepts.
+So I started to reduce it and thought others could have a benefit from my work.
+Let&#8217;s see.</p>
 </div>
 <div class="sect2">
 <h3 id="tutorial-step-1">Tutorial step 1</h3>
 <div class="paragraph">
-<p>The most trivial example for MVC, is having a model, a controller (in GEF4+ speak "Part") and the visual.
-The model is a POJO, storing information only application specific information. Here i store the rectangle coordinates and the color, of what i want to visualize.</p>
+<p>The most trivial example for MVC, is having</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>a model<br>
+The model is a POJO, storing information only application specific information.
+Here i store the rectangle coordinates and the color, of what i want to visualize.</p>
+</li>
+<li>
+<p>a controller (in GEF4+ speak "Part")<br>
+The part is a class implemented by the project to convert the model into visuals.
+It implements the IContentPart interface.</p>
+</li>
+<li>
+<p>the visual<br>
+The elements from JavaFX or their abstractions from GEF</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>The part is a the ModelPart class, that is the one transforming the model information into a presentation.</p>
+<p>GEF makes use of Google Guice.
+You may have a read about it to understand the concept:
+<a href="https://github.com/google/guice" class="bare">https://github.com/google/guice</a>, see the linked video there and the user guide.</p>
 </div>
 <div class="paragraph">
-<p>GEF makes use of Google Guice. You may have a read about it to understand the concept: <a href="https://github.com/google/guice" class="bare">https://github.com/google/guice</a>, see the linked video there and the user guide.</p>
-</div>
-<div class="paragraph">
-<p>The only binding needed for this minimal example is the interface IContentPartFactory to the single instance of ModelPartFactory.</p>
+<p>For this simple example, we need only to configure a single binding,
+to inject out ModelPartFactory into GEF.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -519,12 +551,30 @@ The model is a POJO, storing information only application specific information. 
 </div>
 </div>
 <div class="paragraph">
-<p>When the application&#8217;s model objects are passed into the GEF MVC as content, the ModelPartFactory is responsible to create the model parts. For one content object, one model part is created.
-The ModelPartFactory might use instanceof tests to check for the model types and create the appropriate part class instance. Also information of the model may be used to determine the correct type for the part.</p>
+<p>When the application&#8217;s model objects are passed into the GEF MVC as content,
+the ModelPartFactory is responsible to create the model parts.</p>
 </div>
 <div class="paragraph">
-<p>The ModelParts in this examle extend AbstractContentPart&lt;GeometryNode&lt;RoundedRectangle&gt;&gt;.
-Ok this is not easy. I want to draw a RoundedRectangle, which is a GEF5 geometry. The GeometryNode is an adaption to have it as FX Path. The AbstractContentPart is an abstract content part implementation, acting on the given JavaFX node element, here the GeometryNode.</p>
+<p>See in <code>Gef5MvcTutorial1.java</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">viewer.getContents().setAll(createContents());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For one content object, one model part is created.
+The ModelPartFactory might use instanceof tests to check for the model types
+and create the appropriate part class instance.
+Also information of the model may be used to determine the correct type for the
+part.</p>
+</div>
+<div class="paragraph">
+<p>The ModelParts in this example extend AbstractContentPart&lt;GeometryNode&lt;RoundedRectangle&gt;&gt;.
+I want to draw a RoundedRectangle, which is a GEF5 geometry.
+The GeometryNode is an adaption to have it as FX Path.
+The AbstractContentPart is an abstract content part implementation,
+acting on the given JavaFX node element, here the GeometryNode.</p>
 </div>
 </div>
 <div class="sect2">
@@ -532,16 +582,16 @@ Ok this is not easy. I want to draw a RoundedRectangle, which is a GEF5 geometry
 <div class="paragraph">
 <p>There is a single model object that a single part transfers into a single visual object.</p>
 </div>
-<div class="imageblock">
-<div class="content">
-<img src="part1-model.png" alt="part1 model" width="290" height="53">
-</div>
+<div class="paragraph">
+<p><span class="image"><img src="images/part1_structure.png" alt="part1 structure" width="80%"></span></p>
 </div>
 <div class="paragraph">
-<p>The model object is set as the content for the viewer, this calls the IContentPartFactory to create a IContentPart.</p>
+<p>The model object is set as the content for the viewer (see above), this calls the
+IContentPartFactory to create the right IContentPart.</p>
 </div>
 <div class="paragraph">
-<p>The content part is then responsible to create the visual, the JavaFX objects to represent.</p>
+<p>The content part is then responsible to create the visual, the JavaFX objects
+to represent.</p>
 </div>
 <div class="paragraph">
 <p>Now it looks like this:</p>
@@ -553,7 +603,8 @@ Ok this is not easy. I want to draw a RoundedRectangle, which is a GEF5 geometry
 <p>You see a viewer with the grid dots.</p>
 </div>
 <div class="paragraph">
-<p>The rounded rectangle is shown with a drop shadow effect. It is configured in gef5.mvc.tutorial.Gef5MvcTutorial.configureGlobalVisualEffect(IViewer)</p>
+<p>The rounded rectangle is shown with a drop shadow effect. It is configured in
+gef5.mvc.tutorial.Gef5MvcTutorial.configureGlobalVisualEffect(IViewer)</p>
 </div>
 <div class="ulist">
 <div class="title">Realize what you can do with it:</div>
@@ -582,26 +633,28 @@ Ok this is not easy. I want to draw a RoundedRectangle, which is a GEF5 geometry
 <p>In this step 2 of the tutorial, we will have composed visuals.</p>
 </div>
 <div class="paragraph">
-<p>A text node, that is a rounded rectangle from before, but with a text in it and the dimension of the rectangle is adjusted by the text.</p>
+<p>A text node, that is a rounded rectangle from before, but with a text in it and
+the dimension of the rectangle is adjusted by the text.</p>
 </div>
 <div class="paragraph">
-<p>And there will be symbols for logic gates, that illustrate how to work with Circle, PolyLine, Path, &#8230;&#8203;</p>
+<p>And there will be symbols for logic gates, that illustrate how to work with
+Circle, PolyLine, Path, &#8230;&#8203;</p>
 </div>
 <div class="paragraph">
-<p>For the source code see github <a href="https://github.com/frankbenoit/gef5.mvc.tutorial">gef5.mvc.tutorial2</a></p>
+<p>For the source code see github
+<a href="https://github.com/frankbenoit/gef5.mvc.tutorial">gef5.mvc.tutorial2</a></p>
 </div>
 <div class="paragraph">
-<p>The ModelParts are now extending AbstractContentPart&lt;Group&gt; this allows to have multiple child nodes and to compose the visual presentation.</p>
+<p>The ModelParts are now extending AbstractContentPart&lt;Group&gt; this allows to have
+multiple child nodes and to compose the visual presentation.</p>
 </div>
 <div class="sect2">
 <h3 id="mvc-structure-2">MVC structure</h3>
 <div class="paragraph">
 <p>Compared to step 1, the visual is now a composition of multiple objects.</p>
 </div>
-<div class="imageblock">
-<div class="content">
-<img src="part2-model.png" alt="part2 model" width="480" height="217">
-</div>
+<div class="paragraph">
+<p><span class="image"><img src="images/part2_structure.png" alt="part2 structure" width="80%"></span></p>
 </div>
 </div>
 <div class="sect2">
@@ -616,17 +669,34 @@ Ok this is not easy. I want to draw a RoundedRectangle, which is a GEF5 geometry
 </div>
 </div>
 <div class="sect1">
-<h2 id="part-3-model-updates">Part 3 - Model updates</h2>
+<h2 id="part-3-model-hierarchy-and-updates">Part 3 - Model hierarchy and updates</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In step 3 of this tutorial, the model, the parts and the visuals are compositions of multiple objects. Each model node type is mapped with the ModelPartFactory to a corresponding content part (ModelPart and TextNodePart).</p>
+<p>In step 3 of this tutorial, the model is a tree structure.</p>
+</div>
+<div class="sect2">
+<h3 id="the-model-tree">The model tree</h3>
+<div class="imageblock">
+<div class="content">
+<img src="part3-model.png" alt="part3 model" width="189" height="148">
+</div>
 </div>
 <div class="paragraph">
-<p>For the source of this tutorial step see github - <a href="https://github.com/frankbenoit/gef5.mvc.tutorial/tree/master/gef5.mvc.tutorial3/src/gef5/mvc/tutorial">gef5.mvc.tutorial3</a>.</p>
+<p>The parts will be created in a 1 to 1 tree.
+And the visuals are then created by each part individually.</p>
 </div>
 <div class="paragraph">
-<p>In the previous example the model was a flat list of objects, now we have a tree like model. One instance of Model having 2 childs of TextModel.
-That means, the viewer gets only a single object assigned as content, the instance of Model. The ModelPart implements the doGetContentChildren, to tell GEF about more content children:</p>
+<p>For the source of this tutorial step see github -
+<a href="https://github.com/frankbenoit/gef5.mvc.tutorial/tree/master/gef5.mvc.tutorial3/src/gef5/mvc/tutorial">gef5.mvc.tutorial3</a>.</p>
+</div>
+<div class="paragraph">
+<p><span class="image"><img src="images/part3_structure.png" alt="part3 structure" width="80%"></span></p>
+</div>
+<div class="paragraph">
+<p>That tree structure of the model means, the viewer gets only a single object
+assigned as content, the instance of root.
+The ModelPart implements the doGetContentChildren, to tell GEF about more
+content children:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -637,17 +707,27 @@ public List&lt;? extends TextNode&gt; doGetContentChildren() {
 }</code></pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="update-ui-on-model-change">Update UI on model change</h3>
 <div class="paragraph">
-<p>The model and part elements need to implement some type of update mechanism. Here the bean property listeners are used. You might use the javafx ObservableValues or something else.</p>
+<p>The model and part elements need to implement some type of update mechanism.
+Here the bean property listeners are used. You might use the javafx
+ObservableValues or something else.</p>
+</div>
+<div class="paragraph">
+<p>Normally the part shall depend on the model, but the model not on the part.</p>
 </div>
 <div class="paragraph">
 <p>However, in the end the "refreshVisual()" of the part needs to be called.</p>
 </div>
 <div class="paragraph">
-<p>This example has a button on the top, that applies changes to the model. So the text and the position of the boxes is varied.</p>
+<p>This example has a button on the top, that applies changes to the model.
+So the text and the position of the boxes is varied.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/part3_all.png" alt="part3 all"></span></p>
+</div>
 </div>
 </div>
 </div>
@@ -655,25 +735,15 @@ public List&lt;? extends TextNode&gt; doGetContentChildren() {
 <h2 id="part-4-dragging-and-store-to-model">Part 4 - Dragging and store to model</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In step 4 of this tutorial, the text nodes can be dragged around with the mouse. The new positions are stored into the model object.</p>
+<p>In step 4 of this tutorial, the text nodes can be dragged around with the mouse.
+The new positions are stored into the model object.</p>
 </div>
 <div class="paragraph">
 <p>The model as whole is restored and persisted at application start and end.</p>
 </div>
 <div class="paragraph">
-<p>For the source of this tutorial step see github - <a href="https://github.com/frankbenoit/gef5.mvc.tutorial/tree/master/gef5.mvc.tutorial4/src/gef5/mvc/tutorial">gef5.mvc.tutorial4</a>.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-parts of this tutorial are copied from other examples or from forum postings.
-</td>
-</tr>
-</table>
+<p>For the source of this tutorial step see github -
+<a href="https://github.com/frankbenoit/gef5.mvc.tutorial/tree/master/gef5.mvc.tutorial4/src/gef5/mvc/tutorial">gef5.mvc.tutorial4</a>.</p>
 </div>
 <div class="sect2">
 <h3 id="restoring-and-persisting-the-model">Restoring and persisting the Model</h3>
@@ -702,7 +772,8 @@ private void readObject(java.io.ObjectInputStream s) throws java.lang.ClassNotFo
 </div>
 </div>
 <div class="paragraph">
-<p>In the applications start and stop methods, the loading and persisting code is integrated.</p>
+<p>In the applications start and stop methods, the loading and persisting code is
+integrated.</p>
 </div>
 </div>
 <div class="sect2">
@@ -714,59 +785,583 @@ private void readObject(java.io.ObjectInputStream s) throws java.lang.ClassNotFo
 <p><a href="http://www.eclipse.org/articles/article.php?file=Article-Adapters/index.html" class="bare">http://www.eclipse.org/articles/article.php?file=Article-Adapters/index.html</a></p>
 </div>
 <div class="paragraph">
-<p>In summary, it means, objects in Eclipse context that implement the IAdaptable interface, can give an implementation of a requested interface.</p>
+<p>In summary, it means, objects in Eclipse context that implement the IAdaptable
+interface, can give an implementation of a requested interface.</p>
 </div>
 <div class="paragraph">
-<p>In GEF4, this pattern was enhanced.</p>
+<p>In GEF, this pattern was enhanced.</p>
 </div>
 <div class="paragraph">
 <p>See this article by Alexander Nyßen:
 <a href="http://nyssen.blogspot.de/2014/11/iadaptable-gef4s-interpretation-of.html">IAdaptable - GEF4&#8217;s Interpretation of a Classic </a></p>
 </div>
 <div class="paragraph">
-<p>In addition to the Eclipse adapters, in GEF4, adapters can be configured at runtime, can exists for the same interface type in different roles, can have a reference to the adapted object.</p>
+<p>In addition to the Eclipse adapters, in GEF5, adapters can be configured at
+runtime, can exists for the same interface type in different roles, can have a
+reference to the adapted object.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="the-gef-guice-global-defaults">The GEF Guice global defaults</h3>
+<div class="paragraph">
+<p>Those are the binding, where one type is bound to an implementation class or
+instance. Optionally a scope can be applied.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Binding</th>
+<th class="tableblock halign-left valign-top">Bound to</th>
+<th class="tableblock halign-left valign-top">Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IUndoContext</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UndoContext</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IOperationHistory</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DefaultOperationHistory</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HistoricizingDomain</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">InfiniteCanvasViewer</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LayeredRootPart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractVisualPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractVisualPart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractContentPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractContentPart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractFeedbackPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractFeedbackPart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractHandlePart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractHandlePart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IHandlerResolver</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DefaultHandlerResolver</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ClickDragGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ClickDragGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HoverGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HoverGesture</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PinchSpreadGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PinchSpreadGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RotateGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RotateGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ScrollGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ScrollGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TypeStrokeGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TypeStrokeGesture</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Sometimes this binding is needed to be known. E.g. in part 1, the effects were
+applied to the content layer of the LayeredRootPart. Because the binding was
+known the cast was possible.</p>
+</div>
+<div class="paragraph">
+<p>However, all those binding can be changed in the Guice module.</p>
+</div>
+<div class="paragraph">
+<p>And then, there are the bindings for the adaptables. Here we have as well a lot
+of defaults:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Binding</th>
+<th class="tableblock halign-left valign-top">Adaptable role</th>
+<th class="tableblock halign-left valign-top">Adapter role</th>
+<th class="tableblock halign-left valign-top">Bound to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ClickDragGesture</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HoverGesture</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TypeStrokeGesture</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RotateGesture</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PinchSpreadGesture</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ScrollGesture</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentView</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IDomain</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IHandlerResolver in(IDomain)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IContentPartFactory</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ContentPartPool</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GridModel</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FocusModel</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HoverModel</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SelectionModel in(IViewer)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnappingModel</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart in(IViewer)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FOCUS_FEEDBACK_PART_FACTORY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DefaultFocusFeedbackPartFactory</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HOVER_FEEDBACK_PART_FACTORY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DefaultHoverFeedbackPartFactory</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SELECTION_FEEDBACK_PART_FACTORY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DefaultSelectionFeedbackPartFactory</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HOVER_INTENT_HANDLE_PART_FACTORY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DefaultHoverIntentHandlePartFactory</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SELECTION_HANDLE_PART_FACTORY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DefaultSelectionHandlePartFactory</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SNAPPING_FEEDBACK_PART_FACTORY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DefaultSnappingFeedbackPartFactory</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CursorSupport</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PanningSupport</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnapToSupport</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ConnectedSupport</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FocusAndSelectOnClickHandler</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MarqueeOnDragHandler</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HoverOnHoverHandler</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">panOnScroll</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PanOrZoomOnScrollHandler</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ZoomOnPinchSpreadHandler</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PanOnStrokeHandler</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ViewportPolicy</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ContentBehavior</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HoverBehavior</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HoverIntentBehavior</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SelectionBehavior</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RevealPrimarySelectionBehavior</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GridBehavior</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FocusBehavior</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnappingBehavior</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CreationPolicy</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DeletionPolicy</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IRootPart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">contentViewer</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FocusTraversalPolicy</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractVisualPart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;nothing&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractContentPart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;Affine&gt;transformProvider</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TransformProvider</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractContentPart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ContentPolicy</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractFeedbackPart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;nothing&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AbstractHandlePart</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HoverOnHoverHandler</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The interesting point here to understand is,
+that the IViewer with role <code>contentViewer</code> is adapted to the IDomain.
+And if the domain is asked for an IViewer, it will return whatever is globally
+bound. With all the adapter that are configured for the <code>contentViewer</code>
+adapterMapBinding.</p>
+</div>
+<div class="paragraph">
+<p>In the <code>Logo</code> example, a palette viewer is used to create the left side palette.
+For this, the domain has a second binding to IViewer, but with the role
+<code>paletteViewer</code>. The text is not really important here, it is just the same text
+needed. Now the application can request an IViewer with that role <code>paletteViewer</code>
+and will receive that with the adapter map bindings for it.</p>
+</div>
+<div class="paragraph">
+<p>This is the way, Guice is used to configure different types of viewers, without
+really creating different classes.</p>
+</div>
+<div class="paragraph">
+<p>In the above table, there is one role <code>&lt;Affine&gt;transformProvider</code>, this is where
+an adapter key is used, to combine a textual role and type name.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="bindings-for-the-content-part">Bindings for the content part</h3>
+<div class="paragraph">
+<p>So in GEF, the configuration of the Guice module is one of the important
+control points of a application.</p>
+</div>
+<div class="paragraph">
+<p>To make the nodes in the tutorial selectable, the following code was taken from
+the Logo example.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Role</th>
+<th class="tableblock halign-left valign-top">Bound to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FocusAndSelectOnClickHandler</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HoverOnHoverHandler</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SELECTION_FEEDBACK_GEOMETRY_PROVIDER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ShapeOutlineProvider</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SELECTION_HANDLES_GEOMETRY_PROVIDER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ShapeOutlineProvider</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SELECTION_LINK_FEEDBACK_GEOMETRY_PROVIDER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ShapeOutlineProvider</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">HOVER_FEEDBACK_GEOMETRY_PROVIDER</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ShapeOutlineProvider</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TransformPolicy</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">default</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TranslateSelectedOnDragHandler</p></td>
+</tr>
+</tbody>
+</table>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@Override
+protected void bindAbstractContentPartAdapters(MapBinder&lt;AdapterKey&lt;?&gt;, Object&gt; mapBinder) {
+    super.bindAbstractContentPartAdapters(mapBinder);
+    // register (default) interaction policies (which are based on
+    // viewer
+    // models and do not depend on transaction policies)
+
+    addMappingForDefaultRole(mapBinder,
+            FocusAndSelectOnClickHandler.class);
+
+    addMappingForDefaultRole(mapBinder,
+            HoverOnHoverHandler.class);
+
+    addMappingForRole(mapBinder,
+            DefaultSelectionFeedbackPartFactory.SELECTION_FEEDBACK_GEOMETRY_PROVIDER,
+            ShapeOutlineProvider.class );
+
+    // geometry provider for selection handles
+    addMappingForRole(mapBinder,
+            DefaultSelectionHandlePartFactory.SELECTION_HANDLES_GEOMETRY_PROVIDER,
+            ShapeOutlineProvider.class);
+
+    addMappingForRole(mapBinder,
+            DefaultSelectionFeedbackPartFactory.SELECTION_LINK_FEEDBACK_GEOMETRY_PROVIDER,
+            ShapeOutlineProvider.class);
+
+    // geometry provider for hover feedback
+    addMappingForRole(mapBinder,
+            DefaultHoverFeedbackPartFactory.HOVER_FEEDBACK_GEOMETRY_PROVIDER,
+            ShapeOutlineProvider.class);
+
+    // register resize/transform policies (writing changes also to model)
+    // this ensures that if the content part implements ITransformableContentPart
+    // that the get/set Transformations are called after dragging
+    addMappingForDefaultRole(mapBinder,
+            TransformPolicy.class);
+
+    // interaction policies to relocate on drag (including anchored elements, which are linked)
+    addMappingForDefaultRole(mapBinder,
+            TranslateSelectedOnDragHandler.class);
+}</code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="making-the-nodes-selectable">Making the nodes selectable</h3>
 <div class="paragraph">
-<p>So in GEF4, the configuration of the Guice module is one of the important control points of a application.</p>
+<p>With the first 6 bindings the node get the behavior to be selectable and having
+the hover feedback.</p>
 </div>
 <div class="paragraph">
-<p>To make the nodes in the tutorial selectable, the following code was taken from the Logo example.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="java">@Override
-protected void bindAbstractContentPartAdapters( MapBinder&lt;AdapterKey&lt;?&gt;, Object&gt; adapterMapBinder) {
-
-    super.bindAbstractContentPartAdapters(adapterMapBinder);
-    // register (default) interaction policies (which are based on viewer
-    // models and do not depend on transaction policies)
-    adapterMapBinder
-        .addBinding(AdapterKey.get(ClickDragTool.CLICK_TOOL_POLICY_KEY))
-        .to(FXFocusAndSelectOnClickPolicy.class);
-
-
-    adapterMapBinder
-        .addBinding(AdapterKey.get(HoverTool.TOOL_POLICY_KEY))
-        .to(FXHoverOnHoverPolicy.class);
-
-    // geometry provider for selection feedback
-    adapterMapBinder
-        .addBinding(AdapterKey.get(
-            new TypeToken&lt;Provider&lt;IGeometry&gt;&gt;(){},
-        DefaultFeedbackPartFactory.SELECTION_FEEDBACK_GEOMETRY_PROVIDER))
-        .to(VisualBoundsGeometryProvider.class);
-
-    // geometry provider for hover feedback
-    adapterMapBinder
-        .addBinding(AdapterKey.get(
-            new TypeToken&lt;Provider&lt;IGeometry&gt;&gt;(){},
-            DefaultFeedbackPartFactory.HOVER_FEEDBACK_GEOMETRY_PROVIDER))
-        .to(VisualBoundsGeometryProvider.class);
-}</code></pre>
-</div>
+<p>Instead of binding to the class ShapeOutlineProvider, the binding can be done
+with <code>.toInstance()</code> and create a <code>new ShapeBoundsProvider(5)</code>, which does add
+another space of 5 around that bounds.</p>
 </div>
 <div class="paragraph">
 <p>Normally shown node:</p>
@@ -775,7 +1370,7 @@ protected void bindAbstractContentPartAdapters( MapBinder&lt;AdapterKey&lt;?&gt;
 <p><span class="image"><img src="images/part4_node_normal.png" alt="part4 node normal"></span></p>
 </div>
 <div class="paragraph">
-<p>The mouse hoovering over the node, creates a surrounding box marker.</p>
+<p>The mouse hovering over the node, creates a surrounding box marker.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/part4_node_hoover.png" alt="part4 node hoover"></span></p>
@@ -790,32 +1385,8 @@ protected void bindAbstractContentPartAdapters( MapBinder&lt;AdapterKey&lt;?&gt;
 <div class="sect2">
 <h3 id="making-the-node-dragable">Making the node dragable</h3>
 <div class="paragraph">
-<p>In the Guice module configure:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="java">bindTextNodePartAdapters(AdapterMaps.getAdapterMapBinder(binder(), TextNodePart.class));</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The implementation:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="java">protected void bindTextNodePartAdapters( MapBinder&lt;AdapterKey&lt;?&gt;, Object&gt; adapterMapBinder) {
-    // register resize/transform policies (writing changes also to model)
-    adapterMapBinder
-        .addBinding(AdapterKey.get(TransformPolicy.class))
-        .to(TransformPolicy.class);
-    // interaction policies to relocate on drag
-    adapterMapBinder
-        .addBinding( AdapterKey.get(ClickDragTool.DRAG_TOOL_POLICY_KEY))
-        .to(TranslateSelectedOnDragPolicy.class);
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>This uses the standard components to make items dragable.</p>
+<p>The last 2 binding <code>TransformPolicy</code> and <code>TranslateSelectedOnDragHandler</code> make
+the node dragable.</p>
 </div>
 <div class="paragraph">
 <p>It is surprising that this works, as there is yet no linkage to the model.</p>
@@ -827,92 +1398,21 @@ protected void bindAbstractContentPartAdapters( MapBinder&lt;AdapterKey&lt;?&gt;
 <p>It even works if you press the button to update the model (vary the values).</p>
 </div>
 <div class="paragraph">
-<p>The dragging information is stored in the visuals as a transformation. The model and part can continue to work with the original coordinates.</p>
+<p>The dragging information is stored in the visuals as a transformation.
+The model and part can continue to work with the original coordinates.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="updating-the-model">Updating the model</h3>
+<div class="paragraph">
+<p>To give the whole a sense, the position of the TextNode shall be stored to the
+model. Then it can be persisted and restored.</p>
 </div>
 <div class="paragraph">
-<p>Updating the model</p>
-</div>
-<div class="paragraph">
-<p>To give the whole a sense, the position of the TextNode shall be stored to the model. Then it can be persisted and restored.</p>
-</div>
-<div class="paragraph">
-<p>For this, the ItemTransformPolicy is extended from FXTransformPolicy.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="java">public class ItemTransformPolicy extends FXTransformPolicy {
-    @Override
-    public ITransactionalOperation commit() {
-        ITransactionalOperation visualOperation = super.commit();
-        ITransactionalOperation modelOperation = createUpdateModelOperation();
-        ForwardUndoCompositeOperation commit = new ForwardUndoCompositeOperation("Translate()");
-        if (visualOperation != null) commit.add(visualOperation);
-        if (modelOperation != null) commit.add(modelOperation);
-        return commit.unwrap(true);
-    }
-
-    private ITransactionalOperation createUpdateModelOperation() {
-        return new ChangeTextNodePositionOperation(getHost());
-    }
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The ItemTransformPolicy combines the original FXTranformPolicy with a new opereration, the ChangeTextNodePositionOperation. The new operation shall remove the tranformation from the visuals, and store the information into the mode.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="java">public class ChangeTextNodePositionOperation extends AbstractOperation implements ITransactionalOperation {
-
-    TextNodePart part;
-    public ChangeTextNodePositionOperation(IVisualPart&lt;Node, ? extends Node&gt; part) {
-        super( "" );
-        Assert.isLegal(part instanceof TextNodePart, "Only TestNodePart supported for ChangeItemPositionOperation");
-        this.part = (TextNodePart) part;
-    }
-
-    @Override
-    public IStatus execute(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-        Affine transform = part.getAdapter(FXTransformPolicy.TRANSFORM_PROVIDER_KEY).get();
-        // tell the part, which updates the model, will also trigger a doRefreshVisuals
-        part.translate(transform.getTx(), transform.getTy());
-        // reset the transformation
-        transform.setTx(0);
-        transform.setTy(0);
-        return Status.OK_STATUS;
-    }
-
-    @Override
-    public IStatus redo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-        return null;
-    }
-
-    @Override
-    public IStatus undo(IProgressMonitor monitor, IAdaptable info) throws ExecutionException {
-        return null;
-    }
-
-    @Override
-    public boolean isNoOp() {
-        return false;
-    }
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Last step is to configure the ItemTranformPolicy to be used as implementation for FXTransformPolicy.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="java">    adapterMapBinder
-        .addBinding(AdapterKey.get(FXTransformPolicy.class))
-        .to(ItemTransformPolicy.class);</code></pre>
-</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="part3-model-text.png" alt="part3 model text" width="268" height="439">
-</div>
+<p>For this, the TextNodePart implements ITransformableContentPart.
+The TransformPolicy checks if the content part does implement the
+ITransformableContentPart, and if so, it ensures the <code>setContentTransform()</code> is
+called after dragging completes.</p>
 </div>
 </div>
 </div>
@@ -920,8 +1420,8 @@ protected void bindAbstractContentPartAdapters( MapBinder&lt;AdapterKey&lt;?&gt;
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.234<br>
-Last updated 2020-01-26 23:37:27 +0100
+Version 1.0<br>
+Last updated 2020-01-27 22:06:02 +0100
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

@@ -12,7 +12,7 @@ asciidoctorj {
     }
 }
 
-version = '1.234'
+version = '1.0'
 
 
 asciidoctor {
